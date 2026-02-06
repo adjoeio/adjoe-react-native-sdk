@@ -69,7 +69,6 @@ public class RNPlaytimeSdkModule extends ReactContextBaseJavaModule {
 
     static final Map<String, PlaytimePartnerApp> PARTNER_APPS = new HashMap<>();
     static WebViewSupplier webViewSupplier;
-    private static PhoneVerificationSupplier phoneVerificationSupplier;
     private final ReactApplicationContext reactContext;
 
     public RNPlaytimeSdkModule(ReactApplicationContext reactContext) {
@@ -118,9 +117,7 @@ public class RNPlaytimeSdkModule extends ReactContextBaseJavaModule {
         RNPlaytimeSdkModule.webViewSupplier = supplier;
     }
 
-    public static void setPhoneVerificationSupplier(PhoneVerificationSupplier supplier) {
-        RNPlaytimeSdkModule.phoneVerificationSupplier = supplier;
-    }
+     public static void setPhoneVerificationSupplier(PhoneVerificationSupplier supplier) { }
 
     /* -----------------------------
             STATIC METHODS END
@@ -746,13 +743,7 @@ public class RNPlaytimeSdkModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void faceVerification(final Promise promise) {
-        if (phoneVerificationSupplier == null) {
-            promise.reject("0",
-                    "You must call RNAdjoeSdkModule.setPhoneVerificationSupplier first");
-            return;
-        }
-
-        Activity activity = phoneVerificationSupplier.getActivity();
+        Activity activity = reactContext.getCurrentActivity();
 
         if (activity == null) {
             promise.reject("0", "phoneVerificationSupplier.getActivity() == null");

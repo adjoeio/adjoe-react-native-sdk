@@ -1,10 +1,18 @@
 // RNPlaytimeStudio.m
 
 #import "RNPlaytimeStudio.h"
+#import "RNPlaytimeHelpers.h"
 
 @implementation RNPlaytimeStudio
 
 RCT_EXPORT_MODULE(PlaytimeStudio)
+
++ (NSString *)formatErrorMessage:(NSString *)baseMessage withError:(NSError *)error {
+    if (error != nil && error.localizedDescription != nil && error.localizedDescription.length > 0) {
+        return [NSString stringWithFormat:@"%@: %@", baseMessage, error.localizedDescription];
+    }
+    return baseMessage;
+}
 
 + (BOOL)requiresMainQueueSetup
 {
@@ -14,7 +22,7 @@ RCT_EXPORT_MODULE(PlaytimeStudio)
 - (NSDictionary *)constantsToExport
 {
   return @{
-    @"VERSION": @"4.1.1",
+    @"VERSION": [Playtime getVersion],
   };
 }
 
@@ -24,10 +32,10 @@ RCT_EXPORT_METHOD(
     reject:(RCTPromiseRejectBlock)reject)
 {
     NSError *error = nil;
-    PlaytimeOptions *playtimeOptions = [[PlaytimeOptions alloc] initWithJSONObject:paramsDictionary error:&error];
+    PlaytimeOptions *playtimeOptions = [RNPlaytimeHelpers playtimeOptionsFromDictionary:paramsDictionary error:&error];
     
     if (playtimeOptions == nil || error != nil) {
-        reject(@"playtime_error", @"Invalid parameters for getCampaigns", error);
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for getCampaigns" withError:error], error);
         return;
     }
     
@@ -54,7 +62,7 @@ RCT_EXPORT_METHOD(
                                        completionHandler: ^(PlaytimeCampaignsResponse * _Nullable response, NSError * _Nullable error) {
             if (error != nil) {
                 RCTLogError(@"Error getting campaigns: %@", error);
-                reject(@"playtime_error", @"Error getting campaigns", error);
+                reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error getting campaigns" withError:error], error);
                 return;
             }
             
@@ -73,7 +81,7 @@ RCT_EXPORT_METHOD(
                              completionHandler: ^(PlaytimeCampaignsResponse * _Nullable response, NSError * _Nullable error) {
             if (error != nil) {
                 RCTLogError(@"Error getting campaigns with tokens: %@", error);
-                reject(@"playtime_error", @"Error getting campaigns with tokens", error);
+                reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error getting campaigns with tokens" withError:error], error);
                 return;
             }
             
@@ -95,10 +103,10 @@ RCT_EXPORT_METHOD(
       reject:(RCTPromiseRejectBlock)reject)
 {
     NSError *error = nil;
-    PlaytimeOptions *playtimeOptions = [[PlaytimeOptions alloc] initWithJSONObject:paramsDictionary error:&error];
+    PlaytimeOptions *playtimeOptions = [RNPlaytimeHelpers playtimeOptionsFromDictionary:paramsDictionary error:&error];
     
     if (playtimeOptions == nil || error != nil) {
-        reject(@"playtime_error", @"Invalid parameters for getCampaigns", error);
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for getCampaigns" withError:error], error);
         return;
     }
     
@@ -106,7 +114,7 @@ RCT_EXPORT_METHOD(
                                    completionHandler: ^(PlaytimeCampaignsResponse * _Nullable response, NSError * _Nullable error) {
         if (error != nil) {
             RCTLogError(@"Error getting installed apps: %@", error);
-            reject(@"playtime_error", @"Error getting installed apps", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error getting installed apps" withError:error], error);
             return;
         }
         
@@ -130,7 +138,7 @@ RCT_EXPORT_METHOD(
     PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:campaignDictionary error:&error];
     
     if (campaign == nil || error != nil) {
-        reject(@"playtime_error", @"Invalid parameters for openStore", error);
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for openStore" withError:error], error);
         return;
     }
     
@@ -141,7 +149,7 @@ RCT_EXPORT_METHOD(
             resolve(nil);
         } else {
             RCTLogError(@"Error opening store: %@", error);
-            reject(@"playtime_error", @"Open store error", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Open store error" withError:error], error);
         }
     }];
 }
@@ -155,7 +163,7 @@ RCT_EXPORT_METHOD(
     PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:campaignDictionary error:&error];
     
     if (campaign == nil || error != nil) {
-        reject(@"playtime_error", @"Invalid parameters for openStore", error);
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for openStore" withError:error], error);
         return;
     }
     
@@ -166,7 +174,7 @@ RCT_EXPORT_METHOD(
             resolve(nil);
         } else {
             RCTLogError(@"Error opening store: %@", error);
-            reject(@"playtime_error", @"Open store error", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Open store error" withError:error], error);
         }
     }];
 }
@@ -178,7 +186,7 @@ RCT_EXPORT_METHOD(
     [PlaytimeStudio getPermissionsWithCompletionHandler:^(PlaytimePermissionsResponse * _Nullable response, NSError * _Nullable error) {
         if (error != nil) {
             RCTLogError(@"Error getting permissions: %@", error);
-            reject(@"playtime_error", @"Error getting permissions", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error getting permissions" withError:error], error);
             return;
         }
         
@@ -200,7 +208,7 @@ RCT_EXPORT_METHOD(
     [PlaytimeStudio showPermissionsPromptWithCompletionHandler:^(PlaytimePermissionsResponse * _Nullable response, NSError * _Nullable error) {
         if (error != nil) {
             RCTLogError(@"Error getting permissions: %@", error);
-            reject(@"playtime_error", @"Error getting permissions", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error getting permissions" withError:error], error);
             return;
         }
         
@@ -222,7 +230,7 @@ RCT_EXPORT_METHOD(
     [PlaytimeStudio registerRewardsConnectWithCompletionHandler:^(NSError * _Nullable error) {
         if (error != nil) {
             RCTLogError(@"Error registering for rewards connect: %@", error);
-            reject(@"playtime_error", @"Error registering for rewards connect", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error registering for rewards connect" withError:error], error);
             return;
         }
         
@@ -237,7 +245,7 @@ RCT_EXPORT_METHOD(
     [PlaytimeStudio resetRewardsConnectWithCompletionHandler:^(NSError * _Nullable error) {
         if (error != nil) {
             RCTLogError(@"Error resetting rewards connect: %@", error);
-            reject(@"playtime_error", @"Error resetting rewards connect", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error resetting rewards connect" withError:error], error);
             return;
         }
         

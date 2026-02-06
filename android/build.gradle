@@ -40,5 +40,5 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-android:0.72.7'
-    implementation 'io.adjoe:adjoe-sdk-android:4.1.1'
+    implementation 'io.adjoe:adjoe-sdk-android:4.2.0'
 }

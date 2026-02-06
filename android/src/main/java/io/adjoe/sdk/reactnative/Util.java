@@ -1,5 +1,6 @@
 package io.adjoe.sdk.reactnative;
 
+import android.os.Build;
 import android.text.TextUtils;
 
 import com.facebook.react.bridge.Arguments;
@@ -10,9 +11,13 @@ import com.facebook.react.bridge.WritableMap;
 
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import io.adjoe.sdk.PlaytimeStatusDetails;
 import io.adjoe.sdk.PlaytimeExtensions;
@@ -42,6 +47,9 @@ public class Util {
             }
             if (paramsMap.hasKey("uaSubPublisherEncrypted")) {
                 builder.setUaSubPublisherEncrypted(paramsMap.getString("uaSubPublisherEncrypted"));
+            }
+            if (paramsMap.hasKey("promotionTag")) {
+                builder.setPromotionTag(paramsMap.getString("promotionTag"));
             }
         }
         return builder.build();
@@ -73,10 +81,21 @@ public class Util {
 
         String birthdate = userProfileMap.getString("birthday");
         Date birthday = null;
-        if (!TextUtils.isEmpty(birthdate)) {
-            try {
-                birthday = DateFormat.getDateInstance().parse(birthdate);
-            } catch (ParseException ignore) {
+        if (birthdate != null && !TextUtils.isEmpty(birthdate)) {
+            Instant dateInstant = null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                dateInstant = Instant.parse(birthdate);
+                birthday = Date.from(dateInstant);
+            } else {
+                SimpleDateFormat sdf =
+                        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.US);
+                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+                try {
+                    birthday = sdf.parse(birthdate);
+                } catch (Exception e) {
+
+                }
             }
         }
         return new PlaytimeUserProfile(playtimeGender, birthday);
@@ -349,3 +368,4 @@ public class Util {
         return tokens;
     }
 }
+

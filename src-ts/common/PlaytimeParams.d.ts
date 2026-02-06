@@ -26,4 +26,9 @@ export interface PlaytimeParams {
      * The placement of the Playtime experience; e.g. “home screen”, “more options menu”.
      */
     placement?: string | null;
+
+    /**
+     * Promotion tag to trigger user-level promotions.
+     */
+    promotionTag: string?
 }

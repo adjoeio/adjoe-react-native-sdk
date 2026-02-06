@@ -97,6 +97,11 @@ public class RNPlaytimeStudio extends ReactContextBaseJavaModule {
 
             @Override
             public void onError(@Nullable PlaytimeResponseError playtimeResponseError) {
+                if (playtimeResponseError == null) {
+                    promise.reject("Open Campaign In Store Error", "Unknown error occurred");
+                    return;
+                }
+
                 promise.reject("Open Campaign In Store Error", playtimeResponseError.getError().getMessage());
             }
 
@@ -126,6 +131,10 @@ public class RNPlaytimeStudio extends ReactContextBaseJavaModule {
 
             @Override
             public void onError(@Nullable PlaytimeResponseError playtimeResponseError) {
+                if (playtimeResponseError == null) {
+                    promise.reject("Open Installed Campaign Error", "Unknown error occurred");
+                    return;
+                }
                 promise.reject("Open Installed Campaign Error", playtimeResponseError.getError().getMessage());
             }
         });
@@ -181,8 +190,8 @@ public class RNPlaytimeStudio extends ReactContextBaseJavaModule {
                     }
 
                     @Override
-                    public void onFailure(@NonNull RewardsConnectRegistrationFailureException registartionError) {
-                        promise.reject("Register Error", registartionError.getMessage());
+                    public void onFailure(@NonNull RewardsConnectRegistrationFailureException registrationError) {
+                        promise.reject("Register Error", registrationError.getMessage());
                     }
                 }
             );
@@ -203,8 +212,8 @@ public class RNPlaytimeStudio extends ReactContextBaseJavaModule {
                     }
 
                     @Override
-                    public void onFailure(@NonNull RewardsConnectResetFailureException registartionError) {
-                        promise.reject("Reset Error", registartionError.getMessage());
+                    public void onFailure(@NonNull RewardsConnectResetFailureException registrationError) {
+                        promise.reject("Reset Error", registrationError.getMessage());
                     }
                 }
             );

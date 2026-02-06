@@ -19,6 +19,6 @@ Pod::Spec.new do |s|
   s.requires_arc = true
 
   s.dependency "React-Core"
-  s.dependency 'PlaytimeMonetize', '4.1.1'
+  s.dependency 'PlaytimeMonetize', '4.2.0'
 
 end

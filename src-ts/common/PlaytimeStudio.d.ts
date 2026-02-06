@@ -35,7 +35,7 @@ export interface PlaytimeRewardAction {
     amount: number;
     
     /**
-     * Timestamp when a time-based reward was granted (ISO 8601).
+     * Timestamp when a reward was granted (ISO 8601).
      */
     rewardedAt?: string | null;
     
@@ -111,7 +111,7 @@ export interface PlaytimePromotion {
     endTime?: string | null;
 
     /**
-     * Targeting type for high quality users.
+     * Targeting type for promotion.
      */
     targetingType?: string | null;
 }

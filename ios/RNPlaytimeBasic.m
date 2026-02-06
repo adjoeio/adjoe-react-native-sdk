@@ -1,13 +1,28 @@
 #import "RNPlaytimeBasic.h"
+#import "RNPlaytimeHelpers.h"
 
 @implementation RNPlaytimeBasic
 
 // Use the same name as on Android for compatibility
 RCT_EXPORT_MODULE(RNPlaytimeSdk)
 
++ (NSString *)formatErrorMessage:(NSString *)baseMessage withError:(NSError *)error {
+    if (error != nil && error.localizedDescription != nil && error.localizedDescription.length > 0) {
+        return [NSString stringWithFormat:@"%@: %@", baseMessage, error.localizedDescription];
+    }
+    return baseMessage;
+}
+
 + (BOOL)requiresMainQueueSetup
 {
     return YES;
+}
+
+- (NSDictionary *)constantsToExport
+{
+  return @{
+    @"VERSION": [Playtime getVersion],
+  };
 }
 
 RCT_EXPORT_METHOD(
@@ -16,10 +31,10 @@ RCT_EXPORT_METHOD(
     reject:(RCTPromiseRejectBlock)reject)
 {
     NSError *error = nil;
-    PlaytimeOptions *playtimeOptions = [[PlaytimeOptions alloc] initWithJSONObject:paramsDictionary error:&error];
+    PlaytimeOptions *playtimeOptions = [RNPlaytimeHelpers playtimeOptionsFromDictionary:paramsDictionary error:&error];
     
     if (playtimeOptions == nil || error != nil) {
-        reject(@"playtime_error", @"Invalid parameters for showCatalog", error);
+        reject(@"playtime_error", [RNPlaytimeBasic formatErrorMessage:@"Invalid parameters for showCatalog" withError:error], error);
         return;
     }
     
@@ -27,7 +42,7 @@ RCT_EXPORT_METHOD(
                    completionHandler:^(NSError * _Nullable error) {
         if (error != nil) {
             RCTLogError(@"Error showing Playtime catalog: %@", error);
-            reject(@"playtime_error", @"Playtime catalog error", error);
+            reject(@"playtime_error", [RNPlaytimeBasic formatErrorMessage:@"Playtime catalog error" withError:error], error);
             return;
         }
         
@@ -41,10 +56,10 @@ RCT_EXPORT_METHOD(
     reject:(RCTPromiseRejectBlock)reject)
 {
     NSError *error = nil;
-    PlaytimeOptions *playtimeOptions = [[PlaytimeOptions alloc] initWithJSONObject:paramsDictionary error:&error];
+    PlaytimeOptions *playtimeOptions = [RNPlaytimeHelpers playtimeOptionsFromDictionary:paramsDictionary error:&error];
     
     if (playtimeOptions == nil || error != nil) {
-        reject(@"playtime_error", @"Invalid parameters for setPlaytimeOptions", error);
+        reject(@"playtime_error", [RNPlaytimeBasic formatErrorMessage:@"Invalid parameters for setPlaytimeOptions" withError:error], error);
         return;
     }
     
@@ -52,7 +67,7 @@ RCT_EXPORT_METHOD(
                 completionHandler:^(NSError * _Nullable error) {
         if (error != nil) {
             RCTLogError(@"Error setting Playtime options: %@", error);
-            reject(@"playtime_error", @"Playtime options error", error);
+            reject(@"playtime_error", [RNPlaytimeBasic formatErrorMessage:@"Playtime options error" withError:error], error);
             return;
         }
         
@@ -67,7 +82,7 @@ RCT_EXPORT_METHOD(
      [Playtime getStatusWithCompletionHandler:^(PlaytimeStatus * _Nullable response, NSError * _Nullable error) {
         if (error != nil) {
             RCTLogError(@"Error getting status: %@", error);
-            reject(@"playtime_error", @"Error getting status", error);
+            reject(@"playtime_error", [RNPlaytimeBasic formatErrorMessage:@"Error getting status" withError:error], error);
             return;
         }
         
@@ -79,6 +94,21 @@ RCT_EXPORT_METHOD(
         }
         
         resolve(responseDictionary);
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    getUserId:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject)
+{
+    [Playtime getUserIdWithCompletionHandler:^(NSString * _Nullable userId, NSError * _Nullable error) {
+        if (error != nil) {
+            RCTLogError(@"Error getting user ID: %@", error);
+            reject(@"playtime_error", [RNPlaytimeBasic formatErrorMessage:@"Error getting user ID" withError:error], error);
+            return;
+        }
+        
+        resolve(userId ?: [NSNull null]);
     }];
 }
 

@@ -12,7 +12,7 @@ To integrate the adjoe React Native module into your React Native project, follo
 
 ```yaml
 dependencies: {
-  "react-native-adjoe-sdk": "https://github.com/adjoeio/adjoe-react-native-sdk#v4.1.1"
+  "react-native-adjoe-sdk": "https://github.com/adjoeio/adjoe-react-native-sdk#v4.2.0"
 }
 
 ```
