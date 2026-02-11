@@ -30,5 +30,5 @@ export interface PlaytimeParams {
     /**
      * Promotion tag to trigger user-level promotions.
      */
-    promotionTag: string?
+    promotionTag?: string | null;
 }
