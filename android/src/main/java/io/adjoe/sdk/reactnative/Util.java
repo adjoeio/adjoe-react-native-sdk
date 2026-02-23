@@ -212,6 +212,7 @@ public class Util {
         eventConfigMap.putArray(Constants.JsonKey.TIME_BASED_ACTIONS, rewardActionsToArrayMap(eventConfig.getTimeBasedActions()));
         putIntOrNull(eventConfigMap, eventConfig.getTotalCoinsCollected(), Constants.JsonKey.TOTAL_COINS_COLLECTED);
         putIntOrNull(eventConfigMap, eventConfig.getTotalCoinsPossible(), Constants.JsonKey.TOTAL_COINS_POSSIBLE);
+        putIntOrNull(eventConfigMap, eventConfig.getSecondsToNextLevel(), Constants.JsonKey.SECONDS_TO_NEXT_LEVEL);
         eventConfigMap.putMap(Constants.JsonKey.CASH_BACK_REWARD, cashBackRewardConfigToReadableMap(eventConfig.getCashbackReward()));
         eventConfigMap.putArray(Constants.JsonKey.MULTIPLIERS_ACTIONS, multipliersActionsToArrayMap(eventConfig.getMultipliersActions()));
 

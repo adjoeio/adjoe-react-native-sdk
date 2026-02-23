@@ -1,7 +1,7 @@
 {
   "name": "react-native-adjoe-sdk",
   "description": "React Native adjoe SDK",
-  "version": "4.2.0",
+  "version": "4.3.0-beta.1",
   "main": "src/standard/index.js",
   "types": "src-ts/standard/index.d.ts",
   "scripts": {
