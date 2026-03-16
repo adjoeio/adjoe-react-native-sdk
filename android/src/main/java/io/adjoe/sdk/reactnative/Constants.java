@@ -38,7 +38,6 @@ class Constants {
         static final String TOTAL_COINS_COLLECTED = "totalCoinsCollected";
         static final String TOTAL_COINS_POSSIBLE = "totalCoinsPossible";
         static final String CASH_BACK_REWARD = "cashbackReward";
-        static final String SECONDS_TO_NEXT_LEVEL = "secondsToNextLevel";
         static final String MULTIPLIERS_ACTIONS = "multipliersActions";
 
         static final String TASK_DESCRIPTION = "taskDescription";

@@ -28,8 +28,6 @@ import io.adjoe.sdk.studio.PlaytimeCampaignsListener;
 import io.adjoe.sdk.studio.PlaytimeCampaignsResponse;
 import io.adjoe.sdk.studio.PlaytimeOpenInstalledCampaignListener;
 import io.adjoe.sdk.studio.PlaytimeOpenStoreListener;
-import io.adjoe.sdk.studio.PlaytimeEngagementType;
-import io.adjoe.sdk.studio.PlaytimeExecuteEngagementListener;
 import io.adjoe.sdk.studio.PlaytimePermissionsListener;
 import io.adjoe.sdk.studio.PlaytimePermissionsResponse;
 import io.adjoe.sdk.connect.RewardsConnectRegistrationListener;
@@ -222,45 +220,6 @@ public class RNPlaytimeStudio extends ReactContextBaseJavaModule {
         } else {
             promise.reject("Reset Error", "Activity is null");
         }
-    }
-
-    @ReactMethod
-    public void executeEngagement(ReadableMap campaignMap, String engagementType, Promise promise) {
-        String campaignUUID = campaignMap.getString(Constants.JsonKey.CAMPAIGN_UUID);
-
-        PlaytimeCampaign campaign = cache.get(campaignUUID);
-        PlaytimeEngagementType playtimeEngagementType = PlaytimeEngagementType.DEFAULT;
-
-        if (engagementType.equals("engaged")) {
-            playtimeEngagementType = PlaytimeEngagementType.ENGAGED;
-        }
-
-        if (campaignUUID == null || campaign == null) {
-            promise.reject("Execute Engagement Error", "Campaign not found");
-            return;
-        }
-
-        PlaytimeStudio.executeEngagement(reactContext, campaign, playtimeEngagementType, new PlaytimeExecuteEngagementListener() {
-            @Override
-            public void onFinished() {
-                promise.resolve(null);
-            }
-
-            @Override
-            public void onError(@Nullable PlaytimeResponseError playtimeResponseError) {
-                if (playtimeResponseError == null) {
-                    promise.reject("Execute Engagement Error", "Unknown error occurred");
-                    return;
-                }
-
-                promise.reject("Execute Engagement Error", playtimeResponseError.getError().getMessage());
-            }
-
-            @Override
-            public void onAlreadyEngaging() {
-                promise.reject("Execute Engagement Error", "Request is already in progress");
-            }
-        });
     }
 
     private void getCampaigns(PlaytimeOptions options, Promise promise) {

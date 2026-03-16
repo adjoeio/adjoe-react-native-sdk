@@ -253,36 +253,4 @@ RCT_EXPORT_METHOD(
     }];
 }
 
-RCT_EXPORT_METHOD(
-    executeEngagement:(NSDictionary *)campaignDictionary
-    engagementType:(NSString *)engagementTypeString
-    resolver:(RCTPromiseResolveBlock)resolve
-    rejecter:(RCTPromiseRejectBlock)reject)
-{
-    NSError *error = nil;
-    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:campaignDictionary error:&error];
-
-    NSInteger rawEngagementType = 0; // 'default' is the default one
-    if ([engagementTypeString isEqualToString:@"engaged"]) {
-        rawEngagementType = 1;
-    }
-    
-    if (campaign == nil || error != nil) {
-        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for executeEngagement" withError:error], error);
-        return;
-    }
-    
-    [PlaytimeStudio executeEngagementFor:campaign
-                  engagementType:rawEngagementType
-                  completionHandler:^(NSError * _Nullable error) {
-        if (!error) {
-            RCTLog(@"Engagement executed successfully");
-            resolve(nil);
-        } else {
-            RCTLogError(@"Error executing engagement: %@", error);
-            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Execute engagement error" withError:error], error);
-        }
-    }];
-}
-
 @end
