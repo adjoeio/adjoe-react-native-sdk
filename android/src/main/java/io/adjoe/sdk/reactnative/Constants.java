@@ -38,6 +38,12 @@ class Constants {
         static final String TOTAL_COINS_COLLECTED = "totalCoinsCollected";
         static final String TOTAL_COINS_POSSIBLE = "totalCoinsPossible";
         static final String CASH_BACK_REWARD = "cashbackReward";
+        static final String SECONDS_TO_NEXT_LEVEL = "secondsToNextLevel";
+        static final String TOTAL_ORIGINAL_COINS_POSSIBLE = "totalOriginalCoinsPossible";
+        static final String TOTAL_SEQUENTIAL_COINS = "totalSequentialCoins";
+        static final String TOTAL_ORIGINAL_SEQUENTIAL_COINS = "totalOriginalSequentialCoins";
+        static final String TOTAL_BONUS_COINS = "totalBonusCoins";
+        static final String TOTAL_ORIGINAL_BONUS_COINS = "totalOriginalBonusCoins";
         static final String MULTIPLIERS_ACTIONS = "multipliersActions";
 
         static final String TASK_DESCRIPTION = "taskDescription";
@@ -81,5 +87,8 @@ class Constants {
         static final String IS_INITIALIZED = "isInitialized";
         static final String DETAILS = "details";
         static final String IS_FRAUD = "isFraud";
+
+        static final String CAMPAIGNS_AVAILABLE = "campaignsAvailable";
+        static final String CAMPAIGNS_STATE = "campaignsState";
     }
 }

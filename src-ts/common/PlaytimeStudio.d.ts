@@ -33,7 +33,7 @@ export interface PlaytimeRewardAction {
      * The amount of coins or rewards the user will receive upon completing the event.
      */
     amount: number;
-    
+
     /**
      * Timestamp when a reward was granted (ISO 8601).
      */
@@ -60,7 +60,7 @@ export interface PlaytimeRewardAction {
     timedCoins?: number | null;
     
     /**
-     * Amount of coins that would be rewarded without any bonuses applied.
+     * The amount of coins or rewards the user would receive if there was no promotion.
      */
     originalCoins?: number | null;
     
@@ -173,6 +173,37 @@ export interface PlaytimeEventConfig {
      * Array of events that multiply the rewards.
      */
     multipliersActions: PlaytimeRewardActionMultiplier[];
+
+    /**
+     * The amount of time in seconds to the next level.
+     * Supported only on Android.
+     */
+    secondsToNextLevel?: number | null;
+
+    /**
+     * Maximum possible coins for this config if there as no promotion.
+     */
+    totalOriginalCoinsPossible?: number | null;
+
+    /**
+     * Total amount of coins for all sequential events with promotion multiplier.
+     */
+    totalSequentialCoins?: number | null;
+
+    /**
+     * Total amount of coins for all sequential events without promotion multiplier.
+     */
+    totalOriginalSequentialCoins?: number | null;
+
+    /**
+     * Total amount of coins for all bonus events with promotion multiplier.
+     */
+    totalBonusCoins?: number | null;
+
+    /**
+     * Total amount of coins for all bonus events without promotion multiplier.
+     */
+    totalOriginalBonusCoins?: number | null;
 }
 
 export interface PlaytimeCashbackConfig {
@@ -420,6 +451,8 @@ export interface PlaytimePermissionsResponse {
     permissions: PlaytimePermissions
 }
 
+export type PlaytimeEngagementType = 'default' | 'engaged'
+
 /**
  * The entry point of Adjoe Playtime SDK in Studio version. This namespace provides methods to fetch campaigns and installed apps to show them in your custom UI.
  */
@@ -475,6 +508,29 @@ declare namespace _default {
     function showPermissionsPrompt(): Promise<PlaytimePermissionsResponse>;
 
     /**
+     * Use this method to deeplink installed apps
+     * 
+     * Supported on both Android and iOS.
+     */
+    function showInstalledApps(): Promise<void>;
+
+    /**
+     * Use this method to deeplink app details
+     * 
+     * Supported on both Android and iOS.
+     * @param campaign The campaign you want to open
+     */
+    function showAppDetails(campaign: PlaytimeCampaign): Promise<void>;
+
+    /**
+     * Use this method to deeplink app details with token
+     * 
+     * Supported on both Android and iOS.
+     * @param campaign The campaign you want to open
+     */
+    function showAppDetailsWithToken(token: string, campaignAppId: string): Promise<void>;
+
+    /**
      * Opens the register popup for rewards connect
      * Supported for both android and iOS.
      */
@@ -485,6 +541,25 @@ declare namespace _default {
      * Supported for both android and iOS.
      */
     function resetRewardsConnect(): Promise<void>;
+
+    /**
+     * Use this method to forward the open chatbot
+     * 
+     * Supported on both Android and iOS.
+     * @param [campaign] The campaign you want to open
+     */
+    function openChatbot(campaign?: PlaytimeCampaign): Promise<void>
+
+    /**
+     * Execute a engagement request for the given campaign.
+     * This method tracks view execution locally and ensures only one view tracking request
+     * is sent to the backend per campaign within a 30-minute window.
+     *
+     * Supported on both Android and iOS.
+     * @param campaign The campaign you want to open
+     * @param engagementType The type of engagement you want to execute.
+     */
+    function executeEngagement(campaign: PlaytimeCampaign, engagementType: PlaytimeEngagementType): Promise<void>;
 }
 
 export default _default;

@@ -224,6 +224,72 @@ RCT_EXPORT_METHOD(
 }
 
 RCT_EXPORT_METHOD(
+    showInstalledApps:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject)
+{
+    [PlaytimeStudio showInstalledAppsWithCompletionHandler:^(NSError * _Nullable error) {
+        if (error != nil) {
+            RCTLogError(@"Error showing installed apps: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error showing installed apps" withError:error], error);
+            return;
+        }
+        
+        resolve(nil);
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    showAppDetails:(NSDictionary *)campaignDictionary
+    resolver:(RCTPromiseResolveBlock)resolve
+    rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSError *error = nil;
+    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:campaignDictionary error:&error];
+    
+    if (campaign == nil || error != nil) {
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for showAppDetails" withError:error], error);
+        return;
+    }
+    
+    [PlaytimeStudio showAppDetailsWithCampaign:campaign
+                  completionHandler:^(NSError * _Nullable error) {
+        if (!error) {
+            RCTLog(@"Showed app details successfully");
+            resolve(nil);
+        } else {
+            RCTLogError(@"Error showing app details: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Showing app details error" withError:error], error);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    showAppDetailsWithToken:(NSString *)token
+    campaignAppId:(NSString *)appId
+    resolver:(RCTPromiseResolveBlock)resolve
+    rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSError *error = nil;
+    
+    if (token == nil || appId == nil) {
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for showAppDetails" withError:error], error);
+        return;
+    }
+    
+    [PlaytimeStudio showAppDetailsWithCampaignAppId:appId
+                    token:token
+                    completionHandler:^(NSError * _Nullable error) {
+        if (!error) {
+            RCTLog(@"Showed app details successfully");
+            resolve(nil);
+        } else {
+            RCTLogError(@"Error showing app details: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Showing app details error" withError:error], error);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(
     registerRewardsConnect:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject)
 {
@@ -250,6 +316,65 @@ RCT_EXPORT_METHOD(
         }
         
         resolve(nil);
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    openChatbot:(NSDictionary *)campaignDictionary
+    resolver:(RCTPromiseResolveBlock)resolve
+    rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSError *error = nil;
+    PlaytimeCampaign *campaign = campaignDictionary == nil 
+        ? nil 
+        : [[PlaytimeCampaign alloc] initWithJSONObject:campaignDictionary error:&error];
+    
+    if (error != nil) {
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for openChatbot" withError:error], error);
+        return;
+    }
+    
+    [PlaytimeStudio openChatbotWithCampaign:campaign
+                  completionHandler:^(NSError * _Nullable error) {
+        if (!error) {
+            RCTLog(@"Opened chatbot successfully");
+            resolve(nil);
+        } else {
+            RCTLogError(@"Error opening chatbot: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Open chatbot error" withError:error], error);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    executeEngagement:(NSDictionary *)campaignDictionary
+    engagementType:(NSString *)engagementTypeString
+    resolver:(RCTPromiseResolveBlock)resolve
+    rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSError *error = nil;
+    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:campaignDictionary error:&error];
+
+    NSInteger rawEngagementType = 0; // 'default' is the default one
+    if ([engagementTypeString isEqualToString:@"engaged"]) {
+        rawEngagementType = 1;
+    }
+    
+    if (campaign == nil || error != nil) {
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for executeEngagement" withError:error], error);
+        return;
+    }
+    
+    [PlaytimeStudio executeEngagementFor:campaign
+                  engagementType:rawEngagementType
+                  completionHandler:^(NSError * _Nullable error) {
+        if (!error) {
+            RCTLog(@"Engagement executed successfully");
+            resolve(nil);
+        } else {
+            RCTLogError(@"Error executing engagement: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Execute engagement error" withError:error], error);
+        }
     }];
 }
 

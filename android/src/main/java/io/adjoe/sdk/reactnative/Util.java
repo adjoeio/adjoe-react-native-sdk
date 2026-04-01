@@ -28,6 +28,7 @@ import io.adjoe.sdk.PlaytimeUserProfile;
 import io.adjoe.sdk.studio.PlaytimeCampaign;
 import io.adjoe.sdk.PlaytimeStatus;
 import io.adjoe.sdk.studio.PlaytimePermissionsResponse;
+import io.adjoe.sdk.PlaytimeCampaignsState;
 
 public class Util {
     static PlaytimeParams constructPlaytimeParams(ReadableMap paramsMap) {
@@ -169,9 +170,34 @@ public class Util {
         return statusMap;
     }
 
+    private static WritableArray campaignsStateToArray(List<PlaytimeCampaignsState> campaignStates) {
+        WritableArray array = Arguments.createArray();
+        if (campaignStates != null) {
+            for (PlaytimeCampaignsState state : campaignStates) {
+                array.pushString(campaignStateToString(state));
+            }
+        }
+        return array;
+    }
+
+    private static String campaignStateToString(PlaytimeCampaignsState state) {
+        switch (state) {
+            case BLOCKED:
+                return "BLOCKED";
+            case VPN_DETECTED:
+                return "VPN_DETECTED";
+            case GEO_MISMATCH:
+                return "GEO_MISMATCH";
+            default:
+                return "READY";
+        }
+    }
+
     static ReadableMap statusDetailsToReadableMap(PlaytimeStatusDetails details) {
         WritableMap detailsMap = Arguments.createMap();
         detailsMap.putBoolean(Constants.JsonKey.IS_FRAUD, details.isFraud());
+        detailsMap.putBoolean(Constants.JsonKey.CAMPAIGNS_AVAILABLE, details.getCampaignsAvailable());
+        detailsMap.putArray(Constants.JsonKey.CAMPAIGNS_STATE, campaignsStateToArray(details.getCampaignsState()));
         return detailsMap;
     }
 
@@ -212,6 +238,12 @@ public class Util {
         eventConfigMap.putArray(Constants.JsonKey.TIME_BASED_ACTIONS, rewardActionsToArrayMap(eventConfig.getTimeBasedActions()));
         putIntOrNull(eventConfigMap, eventConfig.getTotalCoinsCollected(), Constants.JsonKey.TOTAL_COINS_COLLECTED);
         putIntOrNull(eventConfigMap, eventConfig.getTotalCoinsPossible(), Constants.JsonKey.TOTAL_COINS_POSSIBLE);
+        putIntOrNull(eventConfigMap, eventConfig.getSecondsToNextLevel(), Constants.JsonKey.SECONDS_TO_NEXT_LEVEL);
+        putIntOrNull(eventConfigMap, eventConfig.getTotalOriginalCoinsPossible(), Constants.JsonKey.TOTAL_ORIGINAL_COINS_POSSIBLE);
+        putIntOrNull(eventConfigMap, eventConfig.getTotalSequentialCoins(), Constants.JsonKey.TOTAL_SEQUENTIAL_COINS);
+        putIntOrNull(eventConfigMap, eventConfig.getTotalOriginalSequentialCoins(), Constants.JsonKey.TOTAL_ORIGINAL_SEQUENTIAL_COINS);
+        putIntOrNull(eventConfigMap, eventConfig.getTotalBonusCoins(), Constants.JsonKey.TOTAL_BONUS_COINS);
+        putIntOrNull(eventConfigMap, eventConfig.getTotalOriginalBonusCoins(), Constants.JsonKey.TOTAL_ORIGINAL_BONUS_COINS);
         eventConfigMap.putMap(Constants.JsonKey.CASH_BACK_REWARD, cashBackRewardConfigToReadableMap(eventConfig.getCashbackReward()));
         eventConfigMap.putArray(Constants.JsonKey.MULTIPLIERS_ACTIONS, multipliersActionsToArrayMap(eventConfig.getMultipliersActions()));
 

@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
@@ -35,10 +35,9 @@ repositories {
         url  "https://releases.adjoe.io/maven"
     }
     google()
-    jcenter()
 }
 
 dependencies {
     implementation 'com.facebook.react:react-android:0.72.7'
-    implementation 'io.adjoe:adjoe-sdk-android:4.2.1'
+    implementation 'io.adjoe:adjoe-sdk-android:4.3.0'
 }

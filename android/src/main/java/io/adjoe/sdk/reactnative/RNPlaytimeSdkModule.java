@@ -334,7 +334,7 @@ public class RNPlaytimeSdkModule extends ReactContextBaseJavaModule {
                     }
 
                     @Override
-                    public void onError() {
+                    public void onError(Exception exception) {
                         promise.reject(
                                 new RuntimeException("Could not execute click for " + packageName));
                     }
@@ -371,7 +371,7 @@ public class RNPlaytimeSdkModule extends ReactContextBaseJavaModule {
                 }
 
                 @Override
-                public void onError() {
+                public void onError(Exception exception) {
                     promise.reject(
                             new RuntimeException("Could not execute detail click for " + packageName));
                 }
