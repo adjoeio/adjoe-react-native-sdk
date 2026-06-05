@@ -1,8 +1,164 @@
-import { PlaytimeParams } from './PlaytimeParams';
-import { PlaytimeExtension } from './PlaytimeExtension';
-import { PlaytimeUserProfile } from './PlaytimeUserProfile';
-import { PlaytimeOptions } from './PlaytimeOptions';
-import { PlaytimeStatus } from './PlaytimeStatus';
+export type PlaytimeCampaignsState = 'READY' | 'BLOCKED' | 'VPN_DETECTED' | 'GEO_MISMATCH';
+
+/**
+ * The parameters related to User acquisition metadata.
+ */
+export interface PlaytimeParams {
+    /**
+     * User acquisition network where the user came from.
+     */
+    uaNetwork?: string | null;
+
+    /**
+     * User acquisition channel where the user came from; e.g. video, offerwall.
+     */
+    uaChannel?: string | null;
+
+    /**
+     * User acquisition sub ID in encrypted form where the user came from.
+     */
+    uaSubPublisherEncrypted?: string | null;
+
+    /**
+     * User acquisition sub ID in clear text where the user came from.
+     */
+    uaSubPublisherCleartext?: string | null;
+
+    /**
+     * The placement of the Playtime experience; e.g. “home screen”, “more options menu”.
+     */
+    placement?: string | null;
+
+    /**
+     * Promotion tag to trigger user-level promotions.
+     */
+    promotionTag?: string | null;
+}
+
+/**
+ * This interface is used to pass additional identifiers of the user.
+ */
+export interface PlaytimeExtension {
+    /**
+     * An optional identifier that is provided back in the S2S payout URL.
+     */
+    subId1?: string | null;
+
+    /**
+     * An optional identifier that is provided back in the S2S payout URL.
+     */
+    subId2?: string | null;
+
+    /**
+     * An optional identifier that is provided back in the S2S payout URL.
+     */
+    subId3?: string | null;
+
+    /**
+     * An optional identifier that is provided back in the S2S payout URL.
+     */
+    subId4?: string | null;
+
+    /**
+     * An optional identifier that is provided back in the S2S payout URL.
+     */
+    subId5?: string | null;
+}
+
+/**
+ * The options passed to Playtime methods.
+ */
+export interface PlaytimeOptions {
+    /**
+     * A custom identifier you must assign to each user.
+     */
+    userId?: string | null;
+
+    /**
+     * The SDK hash for initialization.
+     */
+    sdkHash?: string | null;
+
+    /**
+     * User profile for targeting.
+     */
+    userProfile?: PlaytimeUserProfile | null;
+
+    /**
+     * User acquisition parameters.
+     */
+    params?: PlaytimeParams | null;
+
+    /**
+     * Extension IDs visible in S2S payouts.
+     */
+    extensions?: PlaytimeExtension | null;
+
+    /**
+     * A list of tokens.
+     */
+    tokens?: string[] | null;
+}
+
+/**
+ * The model that represents the status for SDK
+ */
+export interface PlaytimeStatus {
+    /**
+     * A flag indicating if the SDK is successfully initialized.
+     */
+    isInitialized: boolean;
+
+    /**
+     * Additional information about the SDK status.
+     */
+    details: PlaytimeStatusDetails;
+}
+
+/**
+ * The model that represents the status for SDK
+ */
+export interface PlaytimeStatusDetails {
+    /**
+     * A flag indicating if the current user is marked as a fraud user.
+     */
+    isFraud: boolean;
+
+    /**
+     * Indicates whether the user is eligible to request campaigns.
+     */
+    campaignsAvailable: boolean;
+
+    /**
+     * Provides optional context explaining the eligibility state.
+     */
+    campaignsState: PlaytimeCampaignsState[];
+
+    /**
+     * The test group assigned to the user by the backend, if any.
+     */
+    testGroup?: number | null;
+}
+
+/**
+ * The gender of the user.
+ */
+export type PlaytimeGender = 'male' | 'female' | 'unknown';
+
+/**
+ * Additional user information.
+ */
+export interface PlaytimeUserProfile {
+    /**
+     * User gender. Valid options are male, female, unknown.
+     */
+    gender?: PlaytimeGender | null;
+
+    /**
+     * ISO8601 timestamp designating user’s birthday, e.g. 2025-06-26T14:45:30.123Z.
+     */
+    birthday?: string | null;
+}
 
 /**
  * The entry point of adjoe Playtime SDK.
@@ -139,14 +295,14 @@ declare namespace _default {
      * @returns The status of SDK.
      */
     function getStatus(): Promise<PlaytimeStatus>;
-}
 
-export { PlaytimeParams } from './PlaytimeParams';
-export { PlaytimeExtension } from './PlaytimeExtension';
-export { PlaytimeUserProfile } from './PlaytimeUserProfile';
-export { PlaytimeReward } from './PlaytimeReward';
-export { PlaytimeOptions } from './PlaytimeOptions';
-export { PlaytimeStatus } from './PlaytimeStatus';
+    /**
+     * Deinitialize the SDK. This releases the resources taken up by internal components.
+     * 
+     * Supported on both Android and iOS.
+     */
+    function teardown(): Promise<void>;
+}
 
 export default _default;
 //# sourceMappingURL=Playtime.d.ts.map

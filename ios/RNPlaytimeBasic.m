@@ -25,6 +25,17 @@ RCT_EXPORT_MODULE(RNPlaytimeSdk)
   };
 }
 
++ (NSString *)campaignStateToString:(NSNumber *)state {
+    if (state == nil) return nil;
+    switch ([state integerValue]) {
+        case 0: return @"READY";
+        case 1: return @"BLOCKED";
+        case 2: return @"VPN_DETECTED";
+        case 3: return @"GEO_MISMATCH";
+        default: return nil;
+    }
+}
+
 RCT_EXPORT_METHOD(
     showCatalogWithOptions:(NSDictionary *)paramsDictionary
     resolve:(RCTPromiseResolveBlock)resolve
@@ -93,7 +104,25 @@ RCT_EXPORT_METHOD(
             return;
         }
         
-        resolve(responseDictionary);
+        NSMutableDictionary *mutableResponse = [responseDictionary mutableCopy];
+        NSDictionary *details = mutableResponse[@"details"];
+        if (details != nil) {
+            NSMutableDictionary *mutableDetails = [details mutableCopy];
+            NSArray *campaignsState = mutableDetails[@"campaignsState"];
+            if (campaignsState != nil) {
+                NSMutableArray *convertedStates = [NSMutableArray arrayWithCapacity:campaignsState.count];
+                for (NSNumber *state in campaignsState) {
+                    NSString *stateString = [RNPlaytimeBasic campaignStateToString:state];
+                    if (stateString != nil) {
+                        [convertedStates addObject:stateString];
+                    }
+                }
+                mutableDetails[@"campaignsState"] = convertedStates;
+            }
+            mutableResponse[@"details"] = mutableDetails;
+        }
+        
+        resolve(mutableResponse);
     }];
 }
 
@@ -109,6 +138,21 @@ RCT_EXPORT_METHOD(
         }
         
         resolve(userId ?: [NSNull null]);
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    teardown:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject)
+{
+    [Playtime teardownWithCompletionHandler:^(NSError * _Nullable error) {
+        if (error != nil) {
+            RCTLogError(@"Error deinitializing SDK: %@", error);
+            reject(@"playtime_error", [RNPlaytimeBasic formatErrorMessage:@"Error deinitializing SDK" withError:error], error);
+            return;
+        }
+        
+        resolve(nil);
     }];
 }
 

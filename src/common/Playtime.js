@@ -79,6 +79,10 @@ export default {
     return RNPlaytimeSdk.getStatus();
   },
 
+  teardown: function() {
+    return RNPlaytimeSdk.teardown();
+  },
+
   sendEvent: function (event, extra = null, params = null, uaChannel = null) {
     var playtimeParams = getPlaytimeParams(params, uaChannel);
     RNPlaytimeSdk.sendEvent(event, extra, playtimeParams);

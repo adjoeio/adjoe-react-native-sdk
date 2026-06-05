@@ -14,6 +14,67 @@ RCT_EXPORT_MODULE(PlaytimeStudio)
     return baseMessage;
 }
 
++ (NSString *)campaignStatusToString:(NSNumber *)status {
+    if (status == nil) return nil;
+    switch ([status integerValue]) {
+        case 0: return @"AVAILABLE";
+        case 1: return @"PENDING";
+        case 2: return @"INSTALLED";
+        case 3: return @"FAILED";
+        default: return nil;
+    }
+}
+
++ (NSNumber *)campaignStatusToInt:(NSString *)status {
+    if (status == nil) return nil;
+    if ([status isEqualToString:@"AVAILABLE"]) return @0;
+    if ([status isEqualToString:@"PENDING"]) return @1;
+    if ([status isEqualToString:@"INSTALLED"]) return @2;
+    if ([status isEqualToString:@"FAILED"]) return @3;
+    return nil;
+}
+
++ (NSDictionary *)convertCampaignEnumsToString:(NSDictionary *)responseDictionary {
+    if (responseDictionary == nil) return nil;
+    
+    NSMutableDictionary *mutableResponse = [responseDictionary mutableCopy];
+    NSArray *campaigns = mutableResponse[@"campaigns"];
+    
+    if ([campaigns isKindOfClass:[NSArray class]]) {
+        NSMutableArray *mutableCampaigns = [NSMutableArray arrayWithCapacity:campaigns.count];
+        for (NSDictionary *campaign in campaigns) {
+            NSMutableDictionary *mutableCampaign = [campaign mutableCopy];
+            id statusValue = mutableCampaign[@"status"];
+            if ([statusValue isKindOfClass:[NSNumber class]]) {
+                NSString *statusString = [RNPlaytimeStudio campaignStatusToString:statusValue];
+                if (statusString != nil) {
+                    mutableCampaign[@"status"] = statusString;
+                }
+            }
+            [mutableCampaigns addObject:mutableCampaign];
+        }
+        mutableResponse[@"campaigns"] = mutableCampaigns;
+    }
+    
+    return mutableResponse;
+}
+
++ (NSDictionary *)convertCampaignEnumsToInt:(NSDictionary *)campaignDictionary {
+    if (campaignDictionary == nil) return nil;
+    
+    id statusValue = campaignDictionary[@"status"];
+    if ([statusValue isKindOfClass:[NSString class]]) {
+        NSNumber *statusInt = [RNPlaytimeStudio campaignStatusToInt:statusValue];
+        if (statusInt != nil) {
+            NSMutableDictionary *mutableCampaign = [campaignDictionary mutableCopy];
+            mutableCampaign[@"status"] = statusInt;
+            return mutableCampaign;
+        }
+    }
+    
+    return campaignDictionary;
+}
+
 + (BOOL)requiresMainQueueSetup
 {
     return YES;
@@ -73,7 +134,7 @@ RCT_EXPORT_METHOD(
                 return;
             }
             
-            resolve(responseDictionary);
+            resolve([RNPlaytimeStudio convertCampaignEnumsToString:responseDictionary]);
         }];
     } else {
         [PlaytimeStudio getCampaignsWithTokens:tokens
@@ -92,7 +153,7 @@ RCT_EXPORT_METHOD(
                 return;
             }
             
-            resolve(responseDictionary);
+            resolve([RNPlaytimeStudio convertCampaignEnumsToString:responseDictionary]);
         }];
     }
 }
@@ -125,7 +186,7 @@ RCT_EXPORT_METHOD(
             return;
         }
         
-        resolve(responseDictionary);
+        resolve([RNPlaytimeStudio convertCampaignEnumsToString:responseDictionary]);
     }];
 }
 
@@ -135,7 +196,7 @@ RCT_EXPORT_METHOD(
     rejecter:(RCTPromiseRejectBlock)reject)
 {
     NSError *error = nil;
-    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:campaignDictionary error:&error];
+    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:[RNPlaytimeStudio convertCampaignEnumsToInt:campaignDictionary] error:&error];
     
     if (campaign == nil || error != nil) {
         reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for openStore" withError:error], error);
@@ -160,7 +221,7 @@ RCT_EXPORT_METHOD(
     rejecter:(RCTPromiseRejectBlock)reject)
 {
     NSError *error = nil;
-    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:campaignDictionary error:&error];
+    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:[RNPlaytimeStudio convertCampaignEnumsToInt:campaignDictionary] error:&error];
     
     if (campaign == nil || error != nil) {
         reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for openStore" withError:error], error);
@@ -244,7 +305,7 @@ RCT_EXPORT_METHOD(
     rejecter:(RCTPromiseRejectBlock)reject)
 {
     NSError *error = nil;
-    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:campaignDictionary error:&error];
+    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:[RNPlaytimeStudio convertCampaignEnumsToInt:campaignDictionary] error:&error];
     
     if (campaign == nil || error != nil) {
         reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for showAppDetails" withError:error], error);
@@ -327,7 +388,7 @@ RCT_EXPORT_METHOD(
     NSError *error = nil;
     PlaytimeCampaign *campaign = campaignDictionary == nil 
         ? nil 
-        : [[PlaytimeCampaign alloc] initWithJSONObject:campaignDictionary error:&error];
+        : [[PlaytimeCampaign alloc] initWithJSONObject:[RNPlaytimeStudio convertCampaignEnumsToInt:campaignDictionary] error:&error];
     
     if (error != nil) {
         reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for openChatbot" withError:error], error);
@@ -353,7 +414,7 @@ RCT_EXPORT_METHOD(
     rejecter:(RCTPromiseRejectBlock)reject)
 {
     NSError *error = nil;
-    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:campaignDictionary error:&error];
+    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:[RNPlaytimeStudio convertCampaignEnumsToInt:campaignDictionary] error:&error];
 
     NSInteger rawEngagementType = 0; // 'default' is the default one
     if ([engagementTypeString isEqualToString:@"engaged"]) {

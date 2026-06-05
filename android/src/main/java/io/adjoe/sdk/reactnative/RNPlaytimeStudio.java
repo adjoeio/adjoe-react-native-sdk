@@ -1,9 +1,12 @@
 package io.adjoe.sdk.reactnative;
 
-import static io.adjoe.sdk.reactnative.Util.campaignToReadableMap;
-import static io.adjoe.sdk.reactnative.Util.constructOptionsFrom;
+import static io.adjoe.sdk.reactnative.StudioUtil.campaignToReadableMap;
+import static io.adjoe.sdk.reactnative.RNPlaytimeSdkModule.BasicUtil.constructOptionsFrom;
 import static io.adjoe.sdk.reactnative.Util.extractTokens;
-import static io.adjoe.sdk.reactnative.Util.permissionToReadableMap;
+import static io.adjoe.sdk.reactnative.RNPlaytimeSdkModule.BasicUtil.permissionToReadableMap;
+import static io.adjoe.sdk.reactnative.Util.putBooleanOrNull;
+import static io.adjoe.sdk.reactnative.Util.putFloatOrNull;
+import static io.adjoe.sdk.reactnative.Util.putIntOrNull;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,6 +16,7 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
@@ -83,7 +87,7 @@ public class RNPlaytimeStudio extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void openInStore(ReadableMap campaignMap, Promise promise) {
-        String campaignUUID = campaignMap.getString(Constants.JsonKey.CAMPAIGN_UUID);
+        String campaignUUID = campaignMap.getString(StudioUtil.JsonKey.CAMPAIGN_UUID);
 
         PlaytimeCampaign campaign = cache.get(campaignUUID);
 
@@ -117,7 +121,7 @@ public class RNPlaytimeStudio extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void openInstalledCampaign(ReadableMap campaignMap, Promise promise) {
-        String campaignUUID = campaignMap.getString(Constants.JsonKey.CAMPAIGN_UUID);
+        String campaignUUID = campaignMap.getString(StudioUtil.JsonKey.CAMPAIGN_UUID);
 
         PlaytimeCampaign campaign = cache.get(campaignUUID);
 
@@ -183,7 +187,7 @@ public class RNPlaytimeStudio extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void showAppDetails(ReadableMap campaignMap, Promise promise) {
-        String campaignUUID = campaignMap.getString(Constants.JsonKey.CAMPAIGN_UUID);
+        String campaignUUID = campaignMap.getString(StudioUtil.JsonKey.CAMPAIGN_UUID);
         PlaytimeCampaign campaign = cache.get(campaignUUID);
 
         if (getCurrentActivity() != null) {
@@ -270,7 +274,7 @@ public class RNPlaytimeStudio extends ReactContextBaseJavaModule {
     @ReactMethod
     public void openChatbot(ReadableMap campaignMap, Promise promise) {
         try {
-            String campaignUUID = campaignMap == null ? null : campaignMap.getString(Constants.JsonKey.CAMPAIGN_UUID);
+            String campaignUUID = campaignMap == null ? null : campaignMap.getString(StudioUtil.JsonKey.CAMPAIGN_UUID);
             PlaytimeCampaign campaign = cache.get(campaignUUID);
 
             if (getCurrentActivity() != null) {
@@ -289,7 +293,7 @@ public class RNPlaytimeStudio extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void executeEngagement(ReadableMap campaignMap, String engagementType, Promise promise) {
-        String campaignUUID = campaignMap.getString(Constants.JsonKey.CAMPAIGN_UUID);
+        String campaignUUID = campaignMap.getString(StudioUtil.JsonKey.CAMPAIGN_UUID);
 
         PlaytimeCampaign campaign = cache.get(campaignUUID);
         PlaytimeEngagementType playtimeEngagementType = PlaytimeEngagementType.DEFAULT;
@@ -345,7 +349,7 @@ public class RNPlaytimeStudio extends ReactContextBaseJavaModule {
                 }
 
                 WritableMap result = Arguments.createMap();
-                result.putArray(Constants.JsonKey.CAMPAIGNS ,campaigns);
+                result.putArray(StudioUtil.JsonKey.CAMPAIGNS ,campaigns);
                 promise.resolve(result);
             }
 
@@ -391,5 +395,291 @@ public class RNPlaytimeStudio extends ReactContextBaseJavaModule {
                 promise.reject("Open Chatbot Error", playtimeResponseError.getError().getMessage());
             }
         }; 
+    }
+}
+
+class StudioUtil {
+
+    static String campaignStatusToString(PlaytimeCampaign.PlaytimeCampaignStatus status) {
+        if (status == null) return null;
+        switch (status) {
+            case AVAIlABLE:
+                return "AVAILABLE";
+            case PENDING:
+                return "PENDING";
+            case INSTALLED:
+                return "INSTALLED";
+            case FAILED:
+                return "FAILED";
+            default:
+                return null;
+        }
+    }
+
+    // Studio Utils
+    static ReadableMap campaignToReadableMap(PlaytimeCampaign campaign) {
+        WritableMap appMap = Arguments.createMap();
+
+        appMap.putString(JsonKey.CAMPAIGN_UUID, campaign.getCampaignUUID());
+        appMap.putString(JsonKey.APP_NAME, campaign.getAppName());
+        appMap.putString(JsonKey.APP_DESCRIPTION, campaign.getAppDescription());
+        appMap.putString(JsonKey.APP_ID, campaign.getAppID());
+        appMap.putString(JsonKey.INSTALLED_AT, campaign.getInstalledAt());
+        appMap.putString(JsonKey.UNINSTALLED_AT, campaign.getUninstalledAt());
+        putIntOrNull(appMap, campaign.getRewardingExpiresAfter(), JsonKey.REWARDING_EXPIRES_AFTER);
+        appMap.putString(JsonKey.REWARDING_EXPIRES_AT, campaign.getRewardingExpiresAt());
+        appMap.putMap(JsonKey.EVENT_CONFIG, eventConfigToReadableMap(campaign.getEventConfig()));
+        appMap.putString(JsonKey.APP_CATEGORY, campaign.getAppCategory());
+        appMap.putString(JsonKey.CAMPAIGN_EXPIRES_AT, campaign.getCampaignExpiresAt());
+        appMap.putString(JsonKey.CAMPAIGN_TYPE, campaign.getCampaignType());
+        putIntOrNull(appMap, campaign.getFeaturedPosition(), JsonKey.FEATURED_POSITION);
+        putFloatOrNull(appMap, campaign.getScore(), JsonKey.SCORE);
+        appMap.putMap(JsonKey.IMAGE, mediaToReadableMap(campaign.getImage()));
+        appMap.putMap(JsonKey.VIDEO, mediaToReadableMap(campaign.getVideo()));
+        appMap.putString(JsonKey.ICON_IMAGE, campaign.getIconImage());
+        appMap.putMap(JsonKey.PROMOTION, promotionToReadableMap(campaign.getPromotion()));
+        appMap.putBoolean(JsonKey.IS_COMPLETED, campaign.isCompleted());
+        appMap.putString(JsonKey.STATUS, campaignStatusToString(campaign.getStatus()));
+        appMap.putBoolean(JsonKey.IS_CPA, campaign.isCpa());
+        appMap.putDouble(JsonKey.CPA, campaign.getCpa());
+
+        return appMap;
+    }
+
+    static ReadableMap mediaToReadableMap(PlaytimeCampaign.PlaytimeMedia media) {
+        if (media == null) return null;
+
+        WritableMap mediaMap = Arguments.createMap();
+
+        mediaMap.putString(JsonKey.LANDSCAPE, media.getLandscape());
+        mediaMap.putString(JsonKey.PORTRAIT, media.getPortrait());
+
+        return mediaMap;
+    }
+
+    static ReadableMap promotionToReadableMap(PlaytimeCampaign.PlaytimePromotion promotion) {
+        if (promotion == null) return null;
+
+        WritableMap promotionMap = Arguments.createMap();
+
+        promotionMap.putString(JsonKey.NAME, promotion.getName());
+        promotionMap.putString(JsonKey.PROMOTION_DESCRIPTION, promotion.getPromotionDescription());
+        putFloatOrNull(promotionMap, promotion.getBoostFactor(), JsonKey.BOOST_FACTOR);
+        promotionMap.putString(JsonKey.START_TIME, promotion.getStartTime());
+        promotionMap.putString(JsonKey.END_TIME, promotion.getEndTime());
+        promotionMap.putString(JsonKey.TARGETING_TYPE, promotion.getTargetingType());
+
+        return promotionMap;
+
+    }
+
+    static ReadableMap eventConfigToReadableMap(PlaytimeCampaign.EventConfig eventConfig) {
+        if (eventConfig == null) return null;
+
+        WritableMap eventConfigMap = Arguments.createMap();
+
+        eventConfigMap.putArray(JsonKey.SEQUENTIAL_ACTIONS, rewardActionsToArrayMap(eventConfig.getSequentialActions()));
+        eventConfigMap.putArray(JsonKey.BONUS_ACTIONS, rewardActionsToArrayMap(eventConfig.getBonusActions()));
+        eventConfigMap.putArray(JsonKey.TIME_BASED_ACTIONS, rewardActionsToArrayMap(eventConfig.getTimeBasedActions()));
+        eventConfigMap.putArray(JsonKey.CPA_ACTIONS, rewardActionsToArrayMap(eventConfig.getCpaActions()));
+        putIntOrNull(eventConfigMap, eventConfig.getTotalCoinsCollected(), JsonKey.TOTAL_COINS_COLLECTED);
+        putIntOrNull(eventConfigMap, eventConfig.getTotalCoinsPossible(), JsonKey.TOTAL_COINS_POSSIBLE);
+        putIntOrNull(eventConfigMap, eventConfig.getSecondsToNextLevel(), JsonKey.SECONDS_TO_NEXT_LEVEL);
+        putIntOrNull(eventConfigMap, eventConfig.getTotalOriginalCoinsPossible(), JsonKey.TOTAL_ORIGINAL_COINS_POSSIBLE);
+        putIntOrNull(eventConfigMap, eventConfig.getTotalSequentialCoins(), JsonKey.TOTAL_SEQUENTIAL_COINS);
+        putIntOrNull(eventConfigMap, eventConfig.getTotalOriginalSequentialCoins(), JsonKey.TOTAL_ORIGINAL_SEQUENTIAL_COINS);
+        putIntOrNull(eventConfigMap, eventConfig.getTotalBonusCoins(), JsonKey.TOTAL_BONUS_COINS);
+        putIntOrNull(eventConfigMap, eventConfig.getTotalOriginalBonusCoins(), JsonKey.TOTAL_ORIGINAL_BONUS_COINS);
+        eventConfigMap.putMap(JsonKey.CASH_BACK_REWARD, cashBackRewardConfigToReadableMap(eventConfig.getCashbackReward()));
+        eventConfigMap.putArray(JsonKey.MULTIPLIERS_ACTIONS, multipliersActionsToArrayMap(eventConfig.getMultipliersActions()));
+
+        return eventConfigMap;
+    }
+
+    static ReadableArray rewardActionsToArrayMap(List<PlaytimeCampaign.PlaytimeRewardAction> actions) {
+        WritableArray actionsArray = Arguments.createArray();
+
+        if (actions == null) return actionsArray;
+
+        for (int i = 0; i < actions.size(); i++) {
+            WritableMap actionMap = Arguments.createMap();
+
+            PlaytimeCampaign.PlaytimeRewardAction action = actions.get(i);
+
+            actionMap.putString(JsonKey.NAME, action.getName());
+            actionMap.putString(JsonKey.TASK_DESCRIPTION, action.getTaskDescription());
+            actionMap.putString(JsonKey.TASK_TYPE, action.getTaskType());
+            putIntOrNull(actionMap, action.getPlayDuration(), JsonKey.PLAY_DURATION);
+            actionMap.putInt(JsonKey.AMOUNT, action.getAmount());
+            actionMap.putString(JsonKey.REWARDED_AT, action.getRewardedAt());
+            putIntOrNull(actionMap, action.getLevel(), JsonKey.LEVEL);
+            putIntOrNull(actionMap, action.getRewardsCount(), JsonKey.REWARDS_COUNT);
+            putIntOrNull(actionMap, action.getCompletedRewards(), JsonKey.COMPLETED_REWARDS);
+            putIntOrNull(actionMap, action.getTimedCoinsDuration(), JsonKey.TIMED_COINS_DURATION);
+            putIntOrNull(actionMap, action.getTimedCoins(), JsonKey.TIMED_COINS);
+            putIntOrNull(actionMap, action.getOriginalCoins(), JsonKey.ORIGINAL_COINS);
+            putBooleanOrNull(actionMap, action.isTimed(), JsonKey.IS_TIMED);
+            putBooleanOrNull(actionMap, action.isRewardedForPromotion(), JsonKey.IS_REWARDED_FOR_PROMOTION);
+            actionMap.putString(JsonKey.BOOSTER_EXPIRES_AT, action.getBoosterExpiresAt());
+
+            actionsArray.pushMap(actionMap);
+        }
+
+        return actionsArray;
+    }
+
+    static ReadableArray multipliersActionsToArrayMap(List<PlaytimeCampaign.PlaytimeRewardActionMultiplier> actions) {
+        WritableArray actionsArray = Arguments.createArray();
+
+        if (actions == null) return actionsArray;
+
+        for (int i = 0; i < actions.size(); i++) {
+            WritableMap actionMap = Arguments.createMap();
+
+            PlaytimeCampaign.PlaytimeRewardActionMultiplier action = actions.get(i);
+
+            actionMap.putString(JsonKey.EVENT_NAME, action.getEventName());
+            actionMap.putString(JsonKey.EVENT_DESCRIPTION, action.getEventDescription());
+            putIntOrNull(actionMap, action.getMultiplierFactorPercentage(), JsonKey.MULTIPLIER_FACTOR_PERCENTAGE);
+            putIntOrNull(actionMap, action.getMultiplierLevels(), JsonKey.MULTIPLIER_LEVELS);
+            actionMap.putString(JsonKey.STATUS, action.getStatus());
+            putIntOrNull(actionMap, action.getUsedLevels(), JsonKey.USED_LEVELS);
+
+            actionsArray.pushMap(actionMap);
+        }
+
+        return actionsArray;
+    }
+
+    static ReadableMap cashBackRewardConfigToReadableMap(PlaytimeCampaign.PlaytimeCashbackConfig cashbackRewardConfig) {
+        if (cashbackRewardConfig == null) return null;
+
+        WritableMap cashbackRewardMap = Arguments.createMap();
+
+        putFloatOrNull(cashbackRewardMap, cashbackRewardConfig.getExchangeRate(), JsonKey.EXCHANGE_RATE);
+        cashbackRewardMap.putString(JsonKey.CASHBACK_DESCRIPTION, cashbackRewardConfig.getCashbackDescription());
+        putFloatOrNull(cashbackRewardMap, cashbackRewardConfig.getMaxLimitPerCampaignUSD(), JsonKey.MAX_LIMIT_PER_CAMPAIGN_USD);
+        putFloatOrNull(cashbackRewardMap, cashbackRewardConfig.getMaxLimitPerCampaignCoins(), JsonKey.MAX_LIMIT_PER_CAMPAIGN_COINS);
+        cashbackRewardMap.putMap(JsonKey.COMPLETED_REWARDS, cashBackRewardToReadableMap(cashbackRewardConfig.getCompletedRewards()));
+        cashbackRewardMap.putMap(JsonKey.PENDING_REWARDS, cashBackRewardToReadableMap(cashbackRewardConfig.getPendingRewards()));
+
+        return cashbackRewardMap;
+    }
+
+    static ReadableMap cashBackRewardToReadableMap(PlaytimeCampaign.PlaytimeCashbackReward rewards) {
+        if (rewards == null) return null;
+
+        WritableMap cashbackRewardMap = Arguments.createMap();
+
+        putIntOrNull(cashbackRewardMap, rewards.getTotalCoins(), JsonKey.TOTAL_COINS);
+        cashbackRewardMap.putArray(JsonKey.EVENTS, cashbackRewardEventToArrayMap(rewards.getEvents()));
+
+        return cashbackRewardMap;
+    }
+
+    static ReadableArray cashbackRewardEventToArrayMap(List<PlaytimeCampaign.PlaytimeCashbackRewardEvent> events) {
+        WritableArray eventsArray = Arguments.createArray();
+
+        if (events == null) return eventsArray;
+
+        for (int i = 0; i < events.size(); i++) {
+            WritableMap eventMap = Arguments.createMap();
+
+            PlaytimeCampaign.PlaytimeCashbackRewardEvent event = events.get(i);
+            putIntOrNull(eventMap, event.getCoins(), JsonKey.COINS);
+            eventMap.putString(JsonKey.PROCESS_AT, event.getProcessAt());
+            eventMap.putString(JsonKey.RECEIVED_AT, event.getReceivedAt());
+
+            eventsArray.pushMap(eventMap);
+        }
+
+        return eventsArray;
+    }
+
+    static class JsonKey {
+        static final String CAMPAIGN_UUID= "campaignUUID";
+        static final String NAME = "name";
+        static final String APP_NAME = "appName";
+        static final String DESCRIPTION = "description";
+        static final String APP_DESCRIPTION = "appDescription";
+        static final String APP_ID = "appID";
+        static final String INSTALLED_AT = "installedAt";
+        static final String UNINSTALLED_AT = "uninstalledAt";
+        static final String REWARDING_EXPIRES_AFTER = "rewardingExpiresAfter";
+        static final String REWARDING_EXPIRES_AT = "rewardingExpiresAt";
+        static final String EVENT_CONFIG = "eventConfig";
+        static final String APP_CATEGORY = "appCategory";
+        static final String CAMPAIGN_TYPE = "campaignType";
+        static final String CAMPAIGN_EXPIRES_AT = "campaignExpiresAt";
+        static final String FEATURED_POSITION = "featuredPosition";
+        static final String SCORE = "score";
+        static final String IMAGE = "image";
+        static final String VIDEO = "video";
+        static final String ICON_IMAGE = "iconImage";
+        static final String PROMOTION = "promotion";
+        static final String IS_COMPLETED = "isCompleted";
+        static final String STATUS = "status";
+        static final String IS_CPA = "isCpa";
+        static final String CPA = "cpa";
+
+        static final String PORTRAIT = "portrait";
+        static final String LANDSCAPE = "landscape";
+
+        static final String PROMOTION_DESCRIPTION = "promotionDescription";
+        static final String BOOST_FACTOR = "boostFactor";
+        static final String START_TIME = "startTime";
+        static final String END_TIME = "endTime";
+        static final String TARGETING_TYPE = "targetingType";
+
+        static final String SEQUENTIAL_ACTIONS = "sequentialActions";
+        static final String BONUS_ACTIONS = "bonusActions";
+        static final String TIME_BASED_ACTIONS = "timeBasedActions";
+        static final String CPA_ACTIONS = "cpaActions";
+        static final String TOTAL_COINS_COLLECTED = "totalCoinsCollected";
+        static final String TOTAL_COINS_POSSIBLE = "totalCoinsPossible";
+        static final String CASH_BACK_REWARD = "cashbackReward";
+        static final String SECONDS_TO_NEXT_LEVEL = "secondsToNextLevel";
+        static final String TOTAL_ORIGINAL_COINS_POSSIBLE = "totalOriginalCoinsPossible";
+        static final String TOTAL_SEQUENTIAL_COINS = "totalSequentialCoins";
+        static final String TOTAL_ORIGINAL_SEQUENTIAL_COINS = "totalOriginalSequentialCoins";
+        static final String TOTAL_BONUS_COINS = "totalBonusCoins";
+        static final String TOTAL_ORIGINAL_BONUS_COINS = "totalOriginalBonusCoins";
+        static final String MULTIPLIERS_ACTIONS = "multipliersActions";
+
+        static final String TASK_DESCRIPTION = "taskDescription";
+        static final String TASK_TYPE = "taskType";
+        static final String PLAY_DURATION = "playDuration";
+        static final String AMOUNT = "amount";
+        static final String REWARDED_AT = "rewardedAt";
+        static final String LEVEL = "level";
+        static final String REWARDS_COUNT = "rewardsCount";
+        static final String COMPLETED_REWARDS = "completedRewards";
+        static final String TIMED_COINS_DURATION = "timedCoinsDuration";
+        static final String TIMED_COINS = "timedCoins";
+        static final String ORIGINAL_COINS = "originalCoins";
+        static final String IS_TIMED = "isTimed";
+        static final String IS_REWARDED_FOR_PROMOTION = "isRewardedForPromotion";
+        static final String BOOSTER_EXPIRES_AT = "boosterExpiresAt";
+
+        static final String EVENT_NAME = "eventName";
+        static final String EVENT_DESCRIPTION = "eventDescription";
+        static final String MULTIPLIER_FACTOR_PERCENTAGE = "multiplierFactorPercentage";
+        static final String MULTIPLIER_LEVELS = "multiplierLevels";
+        static final String USED_LEVELS = "usedLevels";
+
+        static final String EXCHANGE_RATE = "exchangeRate";
+        static final String CASHBACK_DESCRIPTION = "cashbackDescription";
+        static final String MAX_LIMIT_PER_CAMPAIGN_USD = "maxLimitPerCampaignUSD";
+        static final String MAX_LIMIT_PER_CAMPAIGN_COINS = "maxLimitPerCampaignCoins";
+        static final String PENDING_REWARDS = "pendingRewards";
+
+        static final String TOTAL_COINS = "totalCoins";
+        static final String EVENTS = "events";
+        static final String COINS = "coins";
+        static final String PROCESS_AT = "processAt";
+        static final String RECEIVED_AT = "receivedAt";
+
+        static final String CAMPAIGNS = "campaigns";
+
     }
 }

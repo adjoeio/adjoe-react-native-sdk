@@ -1,4 +1,4 @@
-import { PlaytimeOptions } from './PlaytimeOptions';
+import { PlaytimeOptions } from './Playtime';
 
 /**
  * Rewarded action representation.
@@ -152,6 +152,11 @@ export interface PlaytimeEventConfig {
      * Array of events that are rewarded based on the time played.
      */
     timeBasedActions: PlaytimeRewardAction[];
+
+    /**
+     * Array of CPA (Cost Per Action) events that reward the user for completing specific in-app actions.
+     */
+    cpaActions: PlaytimeRewardAction[];
 
     /**
      * Total coins collected by the user.
@@ -414,6 +419,21 @@ export interface PlaytimeCampaign {
      * Flag indicating whether all rewards have been collected.
      */
     isCompleted?: boolean | null;
+
+    /**
+     * Current status of the campaign.
+     */
+    status: PlaytimeCampaignStatus;
+
+    /**
+     * Flag indicating whether CPA is enabled.
+     */
+    isCpa: boolean;
+
+    /**
+     * CPA of the campaign.
+     */
+    cpa: number;
 }
 
 /**
@@ -452,6 +472,19 @@ export interface PlaytimePermissionsResponse {
 }
 
 export type PlaytimeEngagementType = 'default' | 'engaged'
+
+/**
+ * Represents the current status of a campaign.
+ */
+export type PlaytimeCampaignStatus =
+    /** The campaign is available for installation. */
+    | "AVAILABLE"
+    /** Waiting for the app installation. */
+    | "PENDING"
+    /** The app associated with the campaign has been installed. */
+    | "INSTALLED"
+    /** The campaign installation or processing has failed. */
+    | "FAILED";
 
 /**
  * The entry point of Adjoe Playtime SDK in Studio version. This namespace provides methods to fetch campaigns and installed apps to show them in your custom UI.
