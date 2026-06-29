@@ -244,22 +244,8 @@ RCT_EXPORT_METHOD(
     getPermissions:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject)
 {
-    [PlaytimeStudio getPermissionsWithCompletionHandler:^(PlaytimePermissionsResponse * _Nullable response, NSError * _Nullable error) {
-        if (error != nil) {
-            RCTLogError(@"Error getting permissions: %@", error);
-            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error getting permissions" withError:error], error);
-            return;
-        }
-        
-        NSDictionary *responseDictionary = [response toJSONObject];
-        if (response == nil) {
-            RCTLogError(@"Error parsing permissions response");
-            reject(@"playtime_error", @"Error parsing permissions response", nil);
-            return;
-        }
-        
-        resolve(responseDictionary);
-    }];
+    RCTLogError(@"Get permissions is not supported for this platform");
+    reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Get permissions is not supported for this platform" withError:nil], nil);
 }
 
 RCT_EXPORT_METHOD(
@@ -436,6 +422,31 @@ RCT_EXPORT_METHOD(
             RCTLogError(@"Error executing engagement: %@", error);
             reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Execute engagement error" withError:error], error);
         }
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    executeEngagementWithToken:(NSString *)appID
+    token:(NSString *)token
+    resolve:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject)
+{
+    if (token == nil || appID == nil) {
+        RCTLogError(@"Invalid parameters for executeEngagementWithToken");
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for executeEngagementWithToken" withError:nil], nil);
+        return;
+    }
+
+    [PlaytimeStudio executeEngagementWithAppID:appID
+                                        token:token
+                            completionHandler:^(NSError * _Nullable error) {
+        if (error != nil) {
+            RCTLogError(@"Error executing engagement with token: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error executing engagement with token" withError:error], error);
+            return;
+        }
+
+        resolve(nil);
     }];
 }
 

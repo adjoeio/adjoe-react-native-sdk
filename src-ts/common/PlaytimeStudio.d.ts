@@ -593,6 +593,17 @@ declare namespace _default {
      * @param engagementType The type of engagement you want to execute.
      */
     function executeEngagement(campaign: PlaytimeCampaign, engagementType: PlaytimeEngagementType): Promise<void>;
+
+    /**
+     * Execute a engagement request for the given campaign.
+     * This method tracks view execution locally and ensures only one view tracking request
+     * is sent to the backend per campaign within a 30-minute window.
+     *
+     * Supported on both Android and iOS.
+     * @param appID App ID of the campaign.
+     * @param token Token of the campaign.
+     */
+    function executeEngagementWithToken(appID: string, token: string): Promise<void>;
 }
 
 export default _default;

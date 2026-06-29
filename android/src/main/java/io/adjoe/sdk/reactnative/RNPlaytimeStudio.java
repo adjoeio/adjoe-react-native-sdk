@@ -330,6 +330,31 @@ public class RNPlaytimeStudio extends ReactContextBaseJavaModule {
         });
     }
 
+    @ReactMethod
+    public void executeEngagementWithToken(String appID, String token, Promise promise) {
+        PlaytimeStudio.executeEngagement(reactContext, appID, token, new PlaytimeExecuteEngagementListener() {
+            @Override
+            public void onFinished() {
+                promise.resolve(null);
+            }
+
+            @Override
+            public void onError(@Nullable PlaytimeResponseError playtimeResponseError) {
+                if (playtimeResponseError == null) {
+                    promise.reject("Execute Engagement Error", "Unknown error occurred");
+                    return;
+                }
+
+                promise.reject("Execute Engagement Error", playtimeResponseError.getError().getMessage());
+            }
+
+            @Override
+            public void onAlreadyEngaging() {
+                promise.reject("Execute Engagement Error", "Request is already in progress");
+            }
+        });
+    }
+
     private void getCampaigns(PlaytimeOptions options, Promise promise) {
         PlaytimeStudio.getCampaigns(reactContext, options, createCampaignsListener(promise));
     }
