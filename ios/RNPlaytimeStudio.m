@@ -36,10 +36,10 @@ RCT_EXPORT_MODULE(PlaytimeStudio)
 
 + (NSDictionary *)convertCampaignEnumsToString:(NSDictionary *)responseDictionary {
     if (responseDictionary == nil) return nil;
-    
+
     NSMutableDictionary *mutableResponse = [responseDictionary mutableCopy];
     NSArray *campaigns = mutableResponse[@"campaigns"];
-    
+
     if ([campaigns isKindOfClass:[NSArray class]]) {
         NSMutableArray *mutableCampaigns = [NSMutableArray arrayWithCapacity:campaigns.count];
         for (NSDictionary *campaign in campaigns) {
@@ -55,13 +55,13 @@ RCT_EXPORT_MODULE(PlaytimeStudio)
         }
         mutableResponse[@"campaigns"] = mutableCampaigns;
     }
-    
+
     return mutableResponse;
 }
 
 + (NSDictionary *)convertCampaignEnumsToInt:(NSDictionary *)campaignDictionary {
     if (campaignDictionary == nil) return nil;
-    
+
     id statusValue = campaignDictionary[@"status"];
     if ([statusValue isKindOfClass:[NSString class]]) {
         NSNumber *statusInt = [RNPlaytimeStudio campaignStatusToInt:statusValue];
@@ -71,7 +71,7 @@ RCT_EXPORT_MODULE(PlaytimeStudio)
             return mutableCampaign;
         }
     }
-    
+
     return campaignDictionary;
 }
 
@@ -117,7 +117,7 @@ RCT_EXPORT_METHOD(
             tokens = stringArray;
         }
     }
-    
+
     if (tokens == nil) {
         [PlaytimeStudio getCampaignsWithOptions:playtimeOptions
                                        completionHandler: ^(PlaytimeCampaignsResponse * _Nullable response, NSError * _Nullable error) {
@@ -126,14 +126,14 @@ RCT_EXPORT_METHOD(
                 reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error getting campaigns" withError:error], error);
                 return;
             }
-            
+
             NSDictionary *responseDictionary = [response toJSONObject];
             if (response == nil) {
                 RCTLogError(@"Error parsing campaigns response");
                 reject(@"playtime_error", @"Error parsing campaigns response", nil);
                 return;
             }
-            
+
             resolve([RNPlaytimeStudio convertCampaignEnumsToString:responseDictionary]);
         }];
     } else {
@@ -145,14 +145,14 @@ RCT_EXPORT_METHOD(
                 reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error getting campaigns with tokens" withError:error], error);
                 return;
             }
-            
+
             NSDictionary *responseDictionary = [response toJSONObject];
             if (response == nil) {
                 RCTLogError(@"Error parsing campaigns with tokens response");
                 reject(@"playtime_error", @"Error parsing campaigns with tokens response", nil);
                 return;
             }
-            
+
             resolve([RNPlaytimeStudio convertCampaignEnumsToString:responseDictionary]);
         }];
     }
@@ -317,7 +317,7 @@ RCT_EXPORT_METHOD(
     rejecter:(RCTPromiseRejectBlock)reject)
 {
     NSError *error = nil;
-    
+
     if (token == nil || appId == nil) {
         reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for showAppDetails" withError:error], error);
         return;
@@ -372,8 +372,8 @@ RCT_EXPORT_METHOD(
     rejecter:(RCTPromiseRejectBlock)reject)
 {
     NSError *error = nil;
-    PlaytimeCampaign *campaign = campaignDictionary == nil 
-        ? nil 
+    PlaytimeCampaign *campaign = campaignDictionary == nil
+        ? nil
         : [[PlaytimeCampaign alloc] initWithJSONObject:[RNPlaytimeStudio convertCampaignEnumsToInt:campaignDictionary] error:&error];
     
     if (error != nil) {

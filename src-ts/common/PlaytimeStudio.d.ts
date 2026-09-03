@@ -8,27 +8,27 @@ export interface PlaytimeRewardAction {
      * Reward action name.
      */
     name: string;
-    
+
     /**
      * Description of the task.
      */
     taskDescription: string;
-    
+
     /**
      * Type of task to complete. Possible values: sequential, bonus, playtime.
      */
     taskType: string;
-    
+
     /**
      * Duration (in seconds) of play time required to reward a time-based event. Currently not supported on iOS.
      */
     playDuration?: number | null;
-    
+
     /**
      * The level number of the time-based event. Currently not supported on iOS.
      */
     level?: number | null;
-    
+
     /**
      * The amount of coins or rewards the user will receive upon completing the event.
      */
@@ -38,44 +38,44 @@ export interface PlaytimeRewardAction {
      * Timestamp when a reward was granted (ISO 8601).
      */
     rewardedAt?: string | null;
-    
+
     /**
      * Number of times that the action can be rewarded, applicable to repetitive events.
      */
     rewardsCount?: number | null;
-    
+
     /**
      * Number of times that the action has been rewarded, applicable to repetitive events.
      */
     completedRewards?: number | null;
-    
+
     /**
      * Time window (in minutes) during which the Booster reward is applicable.
      */
     timedCoinsDuration?: number | null;
-    
+
     /**
-     * Amount of coins rewarded during the booster period. 
+     * Amount of coins rewarded during the booster period.
      */
     timedCoins?: number | null;
-    
+
     /**
      * The amount of coins or rewards the user would receive if there was no promotion.
      */
     originalCoins?: number | null;
-    
+
     /**
      * Flag indicating whether the event is a booster event.
      */
     isTimed?: boolean | null;
-    
+
     /**
      * Flag indicating whether the event has been rewarded with promotion.
      */
     isRewardedForPromotion?: boolean | null;
-    
+
     /**
-     * The timestamp (ISO 8601) indicating when the booster reward expires. 
+     * The timestamp (ISO 8601) indicating when the booster reward expires.
      * Use it to determine user eligibility for booster rewards and support features such as booster countdown.
      */
     boosterExpiresAt?: string | null;
@@ -124,7 +124,7 @@ export interface PlaytimeMedia {
      * URL to portrait-oriented media.
      */
     portrait?: string | null;
-    
+
     /**
      * URL to landscape-oriented media.
      */
@@ -169,7 +169,7 @@ export interface PlaytimeEventConfig {
     totalCoinsPossible?: number | null;
 
     /**
-     * Cashback reward configuration for in-app purchases. A missing value means that the feature 
+     * Cashback reward configuration for in-app purchases. A missing value means that the feature
      * is not supported for the campaign or the SDK.
      */
     cashbackReward?: PlaytimeCashbackConfig | null;
@@ -265,7 +265,7 @@ export interface PlaytimeCashbackRewardEvent {
      * Timestamp (ISO 8601).
      */
     processAt?: string | null;
-    
+
     /**
      * Timestamp (ISO 8601).
      */
@@ -284,7 +284,7 @@ export interface PlaytimeRewardActionMultiplier {
     eventDescription?: string | null;
 
     /**
-     * Return the multiplication factor of the coin for the multiplier event. value: 0-100 
+     * Return the multiplication factor of the coin for the multiplier event. value: 0-100
      */
     multiplierFactorPercentage?: number | null;
 
@@ -297,7 +297,7 @@ export interface PlaytimeRewardActionMultiplier {
      * Return the status of the multiplied event:
      * "Pending": multiplier events not used yet
      * "Active": multiplier event is currently active
-     * "Finished": multiplier event has been used and finished 
+     * "Finished": multiplier event has been used and finished
      */
     status?: string | null;
 
@@ -315,7 +315,7 @@ export interface PlaytimeCampaign {
      * Campaign UUID
      */
     campaignUUID?: string | null;
-    
+
     /**
      * App name.
      */
@@ -337,7 +337,7 @@ export interface PlaytimeCampaign {
      * On iOS, it’s the ID in the format com.example.myapp.
      */
     appBundleID?: string | null;
-    
+
     /**
      * On iOS, it’s application's store ID number that is part of the App Store link.
      */
