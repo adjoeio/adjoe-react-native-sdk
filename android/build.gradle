@@ -1,43 +1,88 @@
 buildscript {
+    ext.getExtOrDefault = { name, fallback ->
+        rootProject.ext.has(name) ? rootProject.ext.get(name) : fallback
+    }
+
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.2'
+        classpath "com.android.tools.build:gradle:8.1.1"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${getExtOrDefault('kotlinVersion', '1.9.24')}"
     }
 }
 
+def isNewArchitectureEnabled() {
+    return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
+}
+
 apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+
+apply plugin: 'com.facebook.react'
 
 def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
 }
 
 android {
-    compileSdk 31
+    namespace "io.adjoe.sdk.reactnative"
+    compileSdk safeExtGet('compileSdkVersion', 35)
 
     defaultConfig {
-        minSdk safeExtGet('minSdkVersion',21)
-        targetSdk safeExtGet('targetSdkVersion',31)
-        versionCode 1
-        versionName "1.0"
+        minSdk safeExtGet('minSdkVersion', 24)
+        targetSdk safeExtGet('targetSdkVersion', 35)
+
+        buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
     }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
     lintOptions {
         abortOnError false
     }
+
+    sourceSets {
+        main {
+            if (isNewArchitectureEnabled()) {
+                java.srcDirs += [
+                    "generated/java",
+                    "generated/jni"
+                ]
+            }
+        }
+    }
+}
+
+react {
+    jsRootDir = file("../src/specs")
+    libraryName = "RNPlaytimeSdkSpec"
+    codegenJavaPackageName = "io.adjoe.sdk.reactnative"
 }
 
 repositories {
     mavenCentral()
     maven {
-        url  "https://releases.adjoe.io/maven"
+        url "https://releases.adjoe.io/maven"
     }
     google()
 }
 
 dependencies {
-    implementation 'com.facebook.react:react-android:0.72.7'
-    implementation 'io.adjoe:adjoe-sdk-android:4.5.3'
+    implementation "com.facebook.react:react-android"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:${getExtOrDefault('kotlinVersion', '1.9.24')}"
+    implementation 'io.adjoe:adjoe-sdk-android:5.0.0-beta.1'
 }

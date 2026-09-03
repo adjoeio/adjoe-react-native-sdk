@@ -15,10 +15,16 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/github_account/react-native-adjoe-sdk.git", :tag => "#{s.version}" }
   s.author       = { "adjoe" => "support@adjoe.atlassian.net" }
 
-  s.source_files = "ios/*.{h,m,swift}"
+  # Includes the Objective-C++ TurboModule shims (.mm), the Swift logic classes
+  # (.swift) and the shared ObjC helper (.h/.m).
+  s.source_files = "ios/**/*.{h,m,mm,swift}"
   s.requires_arc = true
 
-  s.dependency "React-Core"
-  s.dependency 'PlaytimeMonetize', '4.5.3'
+  s.dependency 'PlaytimeSDK', '5.0.0-beta.1'
 
+  # Wires up the New Architecture (TurboModules) dependencies and the
+  # RCT_NEW_ARCH_ENABLED / Codegen setup. Provided by the React Native pod
+  # scripts; on the legacy architecture it falls back to depending on
+  # React-Core.
+  install_modules_dependencies(s)
 end
