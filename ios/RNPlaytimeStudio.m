@@ -1,0 +1,453 @@
+// RNPlaytimeStudio.m
+
+#import "RNPlaytimeStudio.h"
+#import "RNPlaytimeHelpers.h"
+
+@implementation RNPlaytimeStudio
+
+RCT_EXPORT_MODULE(PlaytimeStudio)
+
++ (NSString *)formatErrorMessage:(NSString *)baseMessage withError:(NSError *)error {
+    if (error != nil && error.localizedDescription != nil && error.localizedDescription.length > 0) {
+        return [NSString stringWithFormat:@"%@: %@", baseMessage, error.localizedDescription];
+    }
+    return baseMessage;
+}
+
++ (NSString *)campaignStatusToString:(NSNumber *)status {
+    if (status == nil) return nil;
+    switch ([status integerValue]) {
+        case 0: return @"AVAILABLE";
+        case 1: return @"PENDING";
+        case 2: return @"INSTALLED";
+        case 3: return @"FAILED";
+        default: return nil;
+    }
+}
+
++ (NSNumber *)campaignStatusToInt:(NSString *)status {
+    if (status == nil) return nil;
+    if ([status isEqualToString:@"AVAILABLE"]) return @0;
+    if ([status isEqualToString:@"PENDING"]) return @1;
+    if ([status isEqualToString:@"INSTALLED"]) return @2;
+    if ([status isEqualToString:@"FAILED"]) return @3;
+    return nil;
+}
+
++ (NSDictionary *)convertCampaignEnumsToString:(NSDictionary *)responseDictionary {
+    if (responseDictionary == nil) return nil;
+
+    NSMutableDictionary *mutableResponse = [responseDictionary mutableCopy];
+    NSArray *campaigns = mutableResponse[@"campaigns"];
+
+    if ([campaigns isKindOfClass:[NSArray class]]) {
+        NSMutableArray *mutableCampaigns = [NSMutableArray arrayWithCapacity:campaigns.count];
+        for (NSDictionary *campaign in campaigns) {
+            NSMutableDictionary *mutableCampaign = [campaign mutableCopy];
+            id statusValue = mutableCampaign[@"status"];
+            if ([statusValue isKindOfClass:[NSNumber class]]) {
+                NSString *statusString = [RNPlaytimeStudio campaignStatusToString:statusValue];
+                if (statusString != nil) {
+                    mutableCampaign[@"status"] = statusString;
+                }
+            }
+            [mutableCampaigns addObject:mutableCampaign];
+        }
+        mutableResponse[@"campaigns"] = mutableCampaigns;
+    }
+
+    return mutableResponse;
+}
+
++ (NSDictionary *)convertCampaignEnumsToInt:(NSDictionary *)campaignDictionary {
+    if (campaignDictionary == nil) return nil;
+
+    id statusValue = campaignDictionary[@"status"];
+    if ([statusValue isKindOfClass:[NSString class]]) {
+        NSNumber *statusInt = [RNPlaytimeStudio campaignStatusToInt:statusValue];
+        if (statusInt != nil) {
+            NSMutableDictionary *mutableCampaign = [campaignDictionary mutableCopy];
+            mutableCampaign[@"status"] = statusInt;
+            return mutableCampaign;
+        }
+    }
+
+    return campaignDictionary;
+}
+
++ (BOOL)requiresMainQueueSetup
+{
+    return YES;
+}
+
+- (NSDictionary *)constantsToExport
+{
+  return @{
+    @"VERSION": [Playtime getVersion],
+  };
+}
+
+RCT_EXPORT_METHOD(
+    getCampaigns:(NSDictionary *)paramsDictionary
+    resolve:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject)
+{
+    NSError *error = nil;
+    PlaytimeOptions *playtimeOptions = [RNPlaytimeHelpers playtimeOptionsFromDictionary:paramsDictionary error:&error];
+    
+    if (playtimeOptions == nil || error != nil) {
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for getCampaigns" withError:error], error);
+        return;
+    }
+    
+    id tokensValue = paramsDictionary[@"tokens"];
+    NSMutableArray<NSString *> *tokens;
+
+    if ([tokensValue isKindOfClass:[NSArray class]]) {
+        NSArray *rawArray = (NSArray *)tokensValue;
+        NSMutableArray<NSString *> *stringArray = [NSMutableArray array];
+
+        for (id item in rawArray) {
+            if ([item isKindOfClass:[NSString class]]) {
+                [stringArray addObject:(NSString *)item];
+            }
+        }
+
+        if (stringArray.count > 0) {
+            tokens = stringArray;
+        }
+    }
+
+    if (tokens == nil) {
+        [PlaytimeStudio getCampaignsWithOptions:playtimeOptions
+                                       completionHandler: ^(PlaytimeCampaignsResponse * _Nullable response, NSError * _Nullable error) {
+            if (error != nil) {
+                RCTLogError(@"Error getting campaigns: %@", error);
+                reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error getting campaigns" withError:error], error);
+                return;
+            }
+
+            NSDictionary *responseDictionary = [response toJSONObject];
+            if (response == nil) {
+                RCTLogError(@"Error parsing campaigns response");
+                reject(@"playtime_error", @"Error parsing campaigns response", nil);
+                return;
+            }
+
+            resolve([RNPlaytimeStudio convertCampaignEnumsToString:responseDictionary]);
+        }];
+    } else {
+        [PlaytimeStudio getCampaignsWithTokens:tokens
+                                       options:playtimeOptions
+                             completionHandler: ^(PlaytimeCampaignsResponse * _Nullable response, NSError * _Nullable error) {
+            if (error != nil) {
+                RCTLogError(@"Error getting campaigns with tokens: %@", error);
+                reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error getting campaigns with tokens" withError:error], error);
+                return;
+            }
+
+            NSDictionary *responseDictionary = [response toJSONObject];
+            if (response == nil) {
+                RCTLogError(@"Error parsing campaigns with tokens response");
+                reject(@"playtime_error", @"Error parsing campaigns with tokens response", nil);
+                return;
+            }
+
+            resolve([RNPlaytimeStudio convertCampaignEnumsToString:responseDictionary]);
+        }];
+    }
+}
+
+RCT_EXPORT_METHOD(
+      getInstalledCampaigns:(NSDictionary *)paramsDictionary
+      resolve:(RCTPromiseResolveBlock)resolve
+      reject:(RCTPromiseRejectBlock)reject)
+{
+    NSError *error = nil;
+    PlaytimeOptions *playtimeOptions = [RNPlaytimeHelpers playtimeOptionsFromDictionary:paramsDictionary error:&error];
+    
+    if (playtimeOptions == nil || error != nil) {
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for getCampaigns" withError:error], error);
+        return;
+    }
+    
+    [PlaytimeStudio getInstalledCampaignsWithOptions:playtimeOptions
+                                   completionHandler: ^(PlaytimeCampaignsResponse * _Nullable response, NSError * _Nullable error) {
+        if (error != nil) {
+            RCTLogError(@"Error getting installed apps: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error getting installed apps" withError:error], error);
+            return;
+        }
+        
+        NSDictionary *responseDictionary = [response toJSONObject];
+        if (response == nil) {
+            RCTLogError(@"Error parsing installed apps response");
+            reject(@"playtime_error", @"Error parsing installed apps response", nil);
+            return;
+        }
+        
+        resolve([RNPlaytimeStudio convertCampaignEnumsToString:responseDictionary]);
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    openInStore:(NSDictionary *)campaignDictionary
+    resolver:(RCTPromiseResolveBlock)resolve
+    rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSError *error = nil;
+    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:[RNPlaytimeStudio convertCampaignEnumsToInt:campaignDictionary] error:&error];
+    
+    if (campaign == nil || error != nil) {
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for openStore" withError:error], error);
+        return;
+    }
+    
+    [PlaytimeStudio openInStoreWithCampaign:campaign
+                  completionHandler:^(NSError * _Nullable error) {
+        if (!error) {
+            RCTLog(@"Opened store successfully");
+            resolve(nil);
+        } else {
+            RCTLogError(@"Error opening store: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Open store error" withError:error], error);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    openInstalledCampaign:(NSDictionary *)campaignDictionary
+    resolver:(RCTPromiseResolveBlock)resolve
+    rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSError *error = nil;
+    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:[RNPlaytimeStudio convertCampaignEnumsToInt:campaignDictionary] error:&error];
+    
+    if (campaign == nil || error != nil) {
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for openStore" withError:error], error);
+        return;
+    }
+    
+    [PlaytimeStudio openInstalledCampaignWithCampaign:campaign
+                  completionHandler:^(NSError * _Nullable error) {
+        if (!error) {
+            RCTLog(@"Opened store successfully");
+            resolve(nil);
+        } else {
+            RCTLogError(@"Error opening store: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Open store error" withError:error], error);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    getPermissions:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject)
+{
+    RCTLogError(@"Get permissions is not supported for this platform");
+    reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Get permissions is not supported for this platform" withError:nil], nil);
+}
+
+RCT_EXPORT_METHOD(
+    showPermissionsPrompt:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject)
+{
+    [PlaytimeStudio showPermissionsPromptWithCompletionHandler:^(PlaytimePermissionsResponse * _Nullable response, NSError * _Nullable error) {
+        if (error != nil) {
+            RCTLogError(@"Error getting permissions: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error getting permissions" withError:error], error);
+            return;
+        }
+        
+        NSDictionary *responseDictionary = [response toJSONObject];
+        if (response == nil) {
+            RCTLogError(@"Error parsing permissions response");
+            reject(@"playtime_error", @"Error parsing permissions response", nil);
+            return;
+        }
+        
+        resolve(responseDictionary);
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    showInstalledApps:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject)
+{
+    [PlaytimeStudio showInstalledAppsWithCompletionHandler:^(NSError * _Nullable error) {
+        if (error != nil) {
+            RCTLogError(@"Error showing installed apps: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error showing installed apps" withError:error], error);
+            return;
+        }
+        
+        resolve(nil);
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    showAppDetails:(NSDictionary *)campaignDictionary
+    resolver:(RCTPromiseResolveBlock)resolve
+    rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSError *error = nil;
+    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:[RNPlaytimeStudio convertCampaignEnumsToInt:campaignDictionary] error:&error];
+    
+    if (campaign == nil || error != nil) {
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for showAppDetails" withError:error], error);
+        return;
+    }
+    
+    [PlaytimeStudio showAppDetailsWithCampaign:campaign
+                  completionHandler:^(NSError * _Nullable error) {
+        if (!error) {
+            RCTLog(@"Showed app details successfully");
+            resolve(nil);
+        } else {
+            RCTLogError(@"Error showing app details: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Showing app details error" withError:error], error);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    showAppDetailsWithToken:(NSString *)token
+    campaignAppId:(NSString *)appId
+    resolver:(RCTPromiseResolveBlock)resolve
+    rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSError *error = nil;
+
+    if (token == nil || appId == nil) {
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for showAppDetails" withError:error], error);
+        return;
+    }
+    
+    [PlaytimeStudio showAppDetailsWithCampaignAppId:appId
+                    token:token
+                    completionHandler:^(NSError * _Nullable error) {
+        if (!error) {
+            RCTLog(@"Showed app details successfully");
+            resolve(nil);
+        } else {
+            RCTLogError(@"Error showing app details: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Showing app details error" withError:error], error);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    registerRewardsConnect:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject)
+{
+    [PlaytimeStudio registerRewardsConnectWithCompletionHandler:^(NSError * _Nullable error) {
+        if (error != nil) {
+            RCTLogError(@"Error registering for rewards connect: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error registering for rewards connect" withError:error], error);
+            return;
+        }
+        
+        resolve(nil);
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    resetRewardsConnect:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject)
+{
+    [PlaytimeStudio resetRewardsConnectWithCompletionHandler:^(NSError * _Nullable error) {
+        if (error != nil) {
+            RCTLogError(@"Error resetting rewards connect: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error resetting rewards connect" withError:error], error);
+            return;
+        }
+        
+        resolve(nil);
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    openChatbot:(NSDictionary *)campaignDictionary
+    resolver:(RCTPromiseResolveBlock)resolve
+    rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSError *error = nil;
+    PlaytimeCampaign *campaign = campaignDictionary == nil
+        ? nil
+        : [[PlaytimeCampaign alloc] initWithJSONObject:[RNPlaytimeStudio convertCampaignEnumsToInt:campaignDictionary] error:&error];
+    
+    if (error != nil) {
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for openChatbot" withError:error], error);
+        return;
+    }
+    
+    [PlaytimeStudio openChatbotWithCampaign:campaign
+                  completionHandler:^(NSError * _Nullable error) {
+        if (!error) {
+            RCTLog(@"Opened chatbot successfully");
+            resolve(nil);
+        } else {
+            RCTLogError(@"Error opening chatbot: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Open chatbot error" withError:error], error);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    executeEngagement:(NSDictionary *)campaignDictionary
+    engagementType:(NSString *)engagementTypeString
+    resolver:(RCTPromiseResolveBlock)resolve
+    rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSError *error = nil;
+    PlaytimeCampaign *campaign = [[PlaytimeCampaign alloc] initWithJSONObject:[RNPlaytimeStudio convertCampaignEnumsToInt:campaignDictionary] error:&error];
+
+    NSInteger rawEngagementType = 0; // 'default' is the default one
+    if ([engagementTypeString isEqualToString:@"engaged"]) {
+        rawEngagementType = 1;
+    }
+    
+    if (campaign == nil || error != nil) {
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for executeEngagement" withError:error], error);
+        return;
+    }
+    
+    [PlaytimeStudio executeEngagementFor:campaign
+                  engagementType:rawEngagementType
+                  completionHandler:^(NSError * _Nullable error) {
+        if (!error) {
+            RCTLog(@"Engagement executed successfully");
+            resolve(nil);
+        } else {
+            RCTLogError(@"Error executing engagement: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Execute engagement error" withError:error], error);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(
+    executeEngagementWithToken:(NSString *)appID
+    token:(NSString *)token
+    resolve:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject)
+{
+    if (token == nil || appID == nil) {
+        RCTLogError(@"Invalid parameters for executeEngagementWithToken");
+        reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Invalid parameters for executeEngagementWithToken" withError:nil], nil);
+        return;
+    }
+
+    [PlaytimeStudio executeEngagementWithAppID:appID
+                                        token:token
+                            completionHandler:^(NSError * _Nullable error) {
+        if (error != nil) {
+            RCTLogError(@"Error executing engagement with token: %@", error);
+            reject(@"playtime_error", [RNPlaytimeStudio formatErrorMessage:@"Error executing engagement with token" withError:error], error);
+            return;
+        }
+
+        resolve(nil);
+    }];
+}
+
+@end
