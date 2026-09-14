@@ -1,12 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="io.adjoe.sdk.reactnative">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application>
         <meta-data
             android:name="wrapper"
             android:value="RN"
-            tools:replace="android:value"/>
+            tools:replace="android:value" />
     </application>
 
 </manifest>

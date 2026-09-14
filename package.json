@@ -1,9 +1,9 @@
 {
   "name": "react-native-adjoe-sdk",
   "description": "React Native adjoe SDK",
-  "version": "4.5.4",
-  "main": "src/standard/index.js",
-  "types": "src-ts/standard/index.d.ts",
+  "version": "5.0.0-beta.2",
+  "main": "src/index.js",
+  "types": "src-ts/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -14,11 +14,21 @@
   "license": "",
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": ">=0.76.0"
   },
   "devDependencies": {
     "clean-publish": "^1.1.8",
     "publish-variants": "^1.0.4",
+    "react": "19.1.0",
+    "react-native": "0.81.4",
     "typescript": "^5.2.2"
+  },
+  "codegenConfig": {
+    "name": "RNPlaytimeSdkSpec",
+    "type": "modules",
+    "jsSrcsDir": "src/specs",
+    "android": {
+      "javaPackageName": "io.adjoe.sdk.reactnative"
+    }
   }
 }
