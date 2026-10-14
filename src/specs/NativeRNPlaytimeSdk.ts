@@ -8,6 +8,10 @@ export interface Spec extends TurboModule {
   initPlaytime(options: UnsafeObject): Promise<void>;
   showCatalog(catalogOptions: UnsafeObject): Promise<void>;
   executeImpressionEvent(catalogPlacement: UnsafeObject): Promise<void>;
+  addEventListener(): Promise<void>;
+  removeEventListener(): Promise<void>;
+  addListener(eventName: string): void;
+  removeListeners(count: number): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNPlaytimeSdk');

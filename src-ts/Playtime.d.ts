@@ -1,29 +1,4 @@
 /**
- * Options for campaign distribution requests. Provides context (placement, category, display format, promotion tag, and per-request UA context) to the backend for campaign targeting.
- */
-export interface CampaignOptions {
-    /**
-     * The placement where the campaigns will be shown.
-     */
-    placement?: StudioPlacement | null;
-
-    /**
-     * The app category filter. Defaults to GAMING.
-     */
-    category: AppCategory;
-
-    /**
-     * The UI display format.
-     */
-    displayFormat?: DisplayFormat | null;
-
-    /**
-     * An optional promotion tag to trigger user-level promotions.
-     */
-    promotionTag?: string | null;
-}
-
-/**
  * Options for the Playtime catalog request. Provides context (placement, category, promotion tag, and per-request UA context) to the backend for campaign targeting.
  */
 export interface CatalogOptions {
@@ -41,16 +16,11 @@ export interface CatalogOptions {
      * An optional promotion tag to trigger user-level promotions.
      */
     promotionTag?: string | null;
-}
 
-/**
- * Options for installed-campaign requests. Exposes only the app category filter for campaign targeting.
- */
-export interface InstalledCampaignOptions {
     /**
-     * The app category filter. Defaults to GAMING.
+     * Metadata visible in S2S payouts.
      */
-    category: AppCategory;
+    metadata?: PlaytimeMetadata | null;
 }
 
 /**
@@ -116,6 +86,21 @@ export interface PlaytimeUserProfile {
 }
 
 /**
+ * An SDK event shared with the publisher using the configured event map.
+ */
+export interface PlaytimeEvent {
+    /**
+     * The publisher event name configured for the emitted SDK event.
+     */
+    name: string;
+
+    /**
+     * The time at which the SDK delivered the event to the listener. Provided as an ISO 8601 string; the value is parsed natively into a date type.
+     */
+    occurredAt: string;
+}
+
+/**
  * Represents the gender of the user.
  */
 export enum PlaytimeGender {
@@ -165,65 +150,19 @@ export interface PlaytimeExtensions {
 }
 
 /**
- * Represents the placement where Studio campaigns will be shown.
- * Use one of the predefined placements or create a custom placement via the custom case.
+ * This class is used to pass additional metadata of the user.
  */
-export type StudioPlacement = string;
+export interface PlaytimeMetadata {
+    /**
+     * An optional identifier that is provided back in the S2S payout URL.
+     */
+    metadata1?: string | null;
 
-/**
- * The predefined Studio placements.
- * Any other string is treated as a custom placement.
- */
-export const StudioPlacement: {
     /**
-     * Campaigns placed in the navigation bar.
+     * An optional identifier that is provided back in the S2S payout URL.
      */
-    readonly Navbar: 'navbar';
-    /**
-     * Campaigns placed as an icon.
-     */
-    readonly Icon: 'icon';
-    /**
-     * Campaigns placed in the earn tab.
-     */
-    readonly EarnTab: 'earn_tab';
-    /**
-     * Campaigns placed in the game tab.
-     */
-    readonly GameTab: 'game_tab';
-    /**
-     * Campaigns placed on the home page.
-     */
-    readonly HomePage: 'home_page';
-    /**
-     * Campaigns placed in the notification inbox.
-     */
-    readonly NotificationInbox: 'notification_inbox';
-    /**
-     * Campaigns placed in a notification.
-     */
-    readonly Notification: 'notification';
-    /**
-     * Campaigns placed in a mini game.
-     */
-    readonly MiniGame: 'mini_game';
-    /**
-     * Campaigns placed on the order page.
-     */
-    readonly OrderPage: 'order_page';
-    /**
-     * Campaigns placed in the redeem section.
-     */
-    readonly RedeemSection: 'redeem_section';
-    /**
-     * Campaigns placed in the scan receipt flow.
-     */
-    readonly ScanReceipt: 'scan_receipt';
-    /**
-     * Campaigns placed in the step converter.
-     */
-    readonly StepConverter: 'step_converter';
-};
+    metadata2?: string | null;
+}
 
 /**
  * Represents the placement where the catalog will be shown.
@@ -284,51 +223,6 @@ export const CatalogPlacement: {
      * Catalog placed in the step converter.
      */
     readonly StepConverter: 'step_converter';
-};
-
-/**
- * Represents the display format for campaign rendering.
- * Use one of the predefined formats or create a custom format via the custom case.
- */
-export type DisplayFormat = string;
-
-/**
- * The predefined display formats.
- * Any other string is treated as a custom display format.
- */
-export const DisplayFormat: {
-    /**
-     * Renders campaigns as icons.
-     */
-    readonly Icon: 'icon';
-    /**
-     * Renders campaigns as notifications.
-     */
-    readonly Notification: 'notification';
-    /**
-     * Renders campaigns in a notification inbox.
-     */
-    readonly NotificationInbox: 'notification_inbox';
-    /**
-     * Renders campaigns in a horizontally scrolling carousel.
-     */
-    readonly Carousel: 'carousel';
-    /**
-     * Renders campaigns in a custom catalog layout.
-     */
-    readonly CustomCatalog: 'custom_catalog';
-    /**
-     * Renders campaigns as a banner.
-     */
-    readonly Banner: 'banner';
-    /**
-     * Renders campaigns in a popup.
-     */
-    readonly Popup: 'popup';
-    /**
-     * Renders campaigns as an interstitial.
-     */
-    readonly Interstitial: 'interstitial';
 };
 
 /**
@@ -475,6 +369,30 @@ declare namespace _default {
      * Supported on Android, iOS and wrappers.
      */
     function teardown(): Promise<void>;
+
+    /**
+     * Register a listener to receive Playtime SDK events.
+     *
+     * The Promise resolves once the listener is registered; events are delivered
+     * through the listener's `didReceive` callback.
+     *
+     * Supported on Android, iOS and wrappers.
+     * @param eventListener The listener to be notified about Playtime SDK events.
+     */
+    function addEventListener(eventListener: {
+        /**
+         * Called when the SDK emits an event configured for publisher delivery.
+         * @param event The event emitted by the SDK.
+         */
+        didReceive: (event: PlaytimeEvent) => void;
+    }): Promise<void>;
+
+    /**
+     * Remove the currently registered Playtime SDK event listener.
+     *
+     * Supported on Android, iOS and wrappers.
+     */
+    function removeEventListener(): Promise<void>;
 
     /**
      * Records that a catalog entry point became visible. This mandatory event is used for analytics to understand conversion rates from catalog visibility to catalog opens. Pass the placement for the entry point that is visible; use different placements when the app has multiple catalog entry points.

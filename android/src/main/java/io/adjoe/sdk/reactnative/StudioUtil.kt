@@ -3,7 +3,9 @@ package io.adjoe.sdk.reactnative
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.ReadableType
 
+import io.adjoe.sdk.PlaytimeMetadata
 import io.adjoe.sdk.studio.PlaytimeCampaign
 import io.adjoe.sdk.studio.PlaytimeCampaignsResponse
 import io.adjoe.sdk.studio.PlaytimeMedia
@@ -14,12 +16,145 @@ import io.adjoe.sdk.studio.PlaytimeRewardActionMultiplier
 import io.adjoe.sdk.studio.PlaytimeCashbackConfig
 import io.adjoe.sdk.studio.PlaytimeCashbackReward
 import io.adjoe.sdk.studio.PlaytimeCashbackRewardEvent
+import io.adjoe.sdk.CampaignOptions
+import io.adjoe.sdk.InstalledCampaignOptions
+import io.adjoe.sdk.StudioPlacement
+import io.adjoe.sdk.DisplayFormat
+import io.adjoe.sdk.AppCategory
+import io.adjoe.sdk.studio.PlaytimeImpressionType
+import io.adjoe.sdk.studio.TosConsentAction
 
 /**
- * Converts Playtime campaign model objects into RN maps/arrays. Migrated from
- * the original Java `StudioUtil` class.
+ * Converts Playtime campaign model objects into RN maps/arrays and constructs
+ * native Studio option models from RN maps. Migrated from the original Java
+ * `StudioUtil` class.
  */
 object StudioUtil {
+
+    // region Sealed value helpers
+
+    private fun sealedValueOf(map: ReadableMap?, key: String): String? {
+        if (map == null || !map.hasKey(key) || map.isNull(key)) return null
+        if (map.getType(key) != ReadableType.Map) return null
+        val nested = map.getMap(key) ?: return null
+        if (!nested.hasKey(JsonKey.VALUE) || nested.isNull(JsonKey.VALUE)) return null
+        if (nested.getType(JsonKey.VALUE) != ReadableType.String) return null
+        return nested.getString(JsonKey.VALUE)
+    }
+
+    private fun isSealedValueCustom(map: ReadableMap?, key: String): Boolean {
+        if (map == null || !map.hasKey(key) || map.isNull(key)) return false
+        if (map.getType(key) != ReadableType.Map) return false
+        val nested = map.getMap(key) ?: return false
+        if (!nested.hasKey(JsonKey.IS_CUSTOM) || nested.isNull(JsonKey.IS_CUSTOM)) return false
+        if (nested.getType(JsonKey.IS_CUSTOM) != ReadableType.Boolean) return false
+        return nested.getBoolean(JsonKey.IS_CUSTOM)
+    }
+
+    private fun stringOrNull(map: ReadableMap?, key: String): String? {
+        if (map == null || !map.hasKey(key) || map.isNull(key)) return null
+        if (map.getType(key) != ReadableType.String) return null
+        return map.getString(key)
+    }
+
+    /**
+     * Reads an optional nested map for the given key, or null when absent.
+     */
+    private fun optMap(map: ReadableMap?, key: String): ReadableMap? {
+        if (map == null || !map.hasKey(key) || map.isNull(key)) return null
+        return map.getMap(key)
+    }
+
+    /**
+     * Reads an optional string for the given key, or null when absent.
+     */
+    private fun optString(map: ReadableMap?, key: String): String? {
+        if (map == null || !map.hasKey(key) || map.isNull(key)) return null
+        return map.getString(key)
+    }
+
+    // endregion
+
+    // region Options
+
+    fun constructCampaignOptionsFrom(map: ReadableMap?): CampaignOptions {
+        if (map == null) return CampaignOptions()
+        return CampaignOptions(
+            placement = constructStudioPlacementFrom(map, JsonKey.PLACEMENT),
+            category = constructAppCategoryFrom(map, JsonKey.CATEGORY),
+            displayFormat = constructDisplayFormatFrom(map, JsonKey.DISPLAY_FORMAT),
+            promotionTag = stringOrNull(map, JsonKey.PROMOTION_TAG),
+            metadata = constructPlaytimeMetadataFrom(optMap(map, JsonKey.METADATA))
+        )
+    }
+
+    fun constructPlaytimeMetadataFrom(metadataMap: ReadableMap?): PlaytimeMetadata? {
+        if (metadataMap == null) return null
+        return PlaytimeMetadata(
+            metadata1 = optString(metadataMap, JsonKey.METADATA_1),
+            metadata2 = optString(metadataMap, JsonKey.METADATA_2),
+        )
+    }
+
+    fun constructInstalledCampaignOptionsFrom(map: ReadableMap?): InstalledCampaignOptions {
+        if (map == null) return InstalledCampaignOptions()
+        return InstalledCampaignOptions(
+            category = constructAppCategoryFrom(map, JsonKey.CATEGORY)
+        )
+    }
+
+    // endregion
+
+    // region Sealed types
+
+    fun constructStudioPlacementFrom(map: ReadableMap?, key: String): StudioPlacement? {
+        val value = sealedValueOf(map, key) ?: return null
+        if (isSealedValueCustom(map, key)) return StudioPlacement.Custom(value)
+        return when (value) {
+            "navbar" -> StudioPlacement.Navbar
+            "icon" -> StudioPlacement.Icon
+            "earn_tab" -> StudioPlacement.EarnTab
+            "game_tab" -> StudioPlacement.GameTab
+            "home_page" -> StudioPlacement.HomePage
+            "notification_inbox" -> StudioPlacement.NotificationInbox
+            "notification" -> StudioPlacement.Notification
+            "mini_game" -> StudioPlacement.MiniGame
+            "order_page" -> StudioPlacement.OrderPage
+            "redeem_section" -> StudioPlacement.RedeemSection
+            "scan_receipt" -> StudioPlacement.ScanReceipt
+            "step_converter" -> StudioPlacement.StepConverter
+            else -> StudioPlacement.Custom(value)
+        }
+    }
+
+    fun constructDisplayFormatFrom(map: ReadableMap?, key: String): DisplayFormat? {
+        val value = sealedValueOf(map, key) ?: return null
+        if (isSealedValueCustom(map, key)) return DisplayFormat.Custom(value)
+        return when (value) {
+            "icon" -> DisplayFormat.Icon
+            "notification" -> DisplayFormat.Notification
+            "notification_inbox" -> DisplayFormat.NotificationInbox
+            "carousel" -> DisplayFormat.Carousel
+            "custom_catalog" -> DisplayFormat.CustomCatalog
+            "banner" -> DisplayFormat.Banner
+            "popup" -> DisplayFormat.Popup
+            "interstitial" -> DisplayFormat.Interstitial
+            else -> DisplayFormat.Custom(value)
+        }
+    }
+
+    fun constructAppCategoryFrom(map: ReadableMap?, key: String): AppCategory {
+        return when (sealedValueOf(map, key)) {
+            "gaming" -> AppCategory.GAMING
+            "non-gaming" -> AppCategory.NON_GAMING
+            "both" -> AppCategory.BOTH
+            else -> AppCategory.GAMING
+        }
+    }
+
+    // endregion
+
+    // region Responses
 
     fun campaignsResponseToReadableMap(response: PlaytimeCampaignsResponse?): ReadableMap? {
         if (response == null) return null
@@ -184,7 +319,17 @@ object StudioUtil {
         return eventsArray
     }
 
+    // endregion
+
     object JsonKey {
+        const val VALUE = "value"
+        const val IS_CUSTOM = "isCustom"
+
+        const val PLACEMENT = "placement"
+        const val CATEGORY = "category"
+        const val DISPLAY_FORMAT = "displayFormat"
+        const val PROMOTION_TAG = "promotionTag"
+
         const val CAMPAIGNS = "campaigns"
 
         const val APP_NAME = "appName"
@@ -268,5 +413,9 @@ object StudioUtil {
         const val COINS = "coins"
         const val PROCESS_AT = "processAt"
         const val RECEIVED_AT = "receivedAt"
+
+        const val METADATA = "metadata"
+        const val METADATA_1 = "metadata1"
+        const val METADATA_2 = "metadata2"
     }
 }

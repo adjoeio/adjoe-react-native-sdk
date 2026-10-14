@@ -26,13 +26,31 @@
   PlaytimeSdkImpl *_impl;
 }
 
+@synthesize bridge = _bridge;
+
 // Use the same name as on Android for compatibility.
 RCT_EXPORT_MODULE(RNPlaytimeSdk)
+
+// The device event name under which SDK events are delivered to JavaScript. Mirrors the
+// Android constant and the JS NativeEventEmitter subscription.
+static NSString *const kPlaytimeEventName = @"onPlaytimeEvent";
 
 - (instancetype)init
 {
   if (self = [super init]) {
     _impl = [PlaytimeSdkImpl new];
+
+    // Forward SDK events emitted by the Swift impl to JavaScript as a device event. A
+    // publisher's JS listener object cannot cross the bridge, so the JS NativeEventEmitter
+    // relays this device event back to the registered listener's `didReceive` callback.
+    __weak __typeof(self) weakSelf = self;
+    _impl.onEvent = ^(NSDictionary *payload) {
+      __strong __typeof(weakSelf) strongSelf = weakSelf;
+      [strongSelf->_bridge enqueueJSCall:@"RCTDeviceEventEmitter"
+                                  method:@"emit"
+                                    args:@[kPlaytimeEventName, payload ?: @{}]
+                              completion:NULL];
+    };
   }
   return self;
 }
@@ -79,6 +97,23 @@ RCT_EXPORT_MODULE(RNPlaytimeSdk)
   [_impl executeImpressionEvent:catalogPlacement resolve:resolve reject:reject];
 }
 
+- (void)addEventListener:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject
+{
+  [_impl addEventListener:resolve reject:reject];
+}
+
+- (void)removeEventListener:(RCTPromiseResolveBlock)resolve
+                     reject:(RCTPromiseRejectBlock)reject
+{
+  [_impl removeEventListener:resolve reject:reject];
+}
+
+// Required by the NativeEventEmitter contract. Event delivery is driven by the SDK
+// listener, so these are no-ops; they exist so the JS emitter has a native counterpart.
+- (void)addListener:(NSString *)eventName {}
+- (void)removeListeners:(double)count {}
+
 // MARK: - TurboModule
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
@@ -121,6 +156,23 @@ RCT_EXPORT_METHOD(executeImpressionEvent:(NSDictionary *)catalogPlacement
 {
   [_impl executeImpressionEvent:catalogPlacement resolve:resolve reject:reject];
 }
+
+RCT_EXPORT_METHOD(addEventListener:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+  [_impl addEventListener:resolve reject:reject];
+}
+
+RCT_EXPORT_METHOD(removeEventListener:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+  [_impl removeEventListener:resolve reject:reject];
+}
+
+// Required by the NativeEventEmitter contract on the Old Architecture. Event delivery is
+// driven by the SDK listener, so these are no-ops.
+RCT_EXPORT_METHOD(addListener:(NSString *)eventName) {}
+RCT_EXPORT_METHOD(removeListeners:(double)count) {}
 
 #endif
 

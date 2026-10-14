@@ -22,8 +22,8 @@ import io.adjoe.sdk.connect.RewardsConnectResetListener
 import io.adjoe.sdk.PlaytimeException
 import io.adjoe.sdk.studio.PlaytimeStudio
 
-import io.adjoe.sdk.reactnative.BasicUtil.constructCampaignOptionsFrom
-import io.adjoe.sdk.reactnative.BasicUtil.constructInstalledCampaignOptionsFrom
+import io.adjoe.sdk.reactnative.StudioUtil.constructCampaignOptionsFrom
+import io.adjoe.sdk.reactnative.StudioUtil.constructInstalledCampaignOptionsFrom
 
 class PlaytimeStudioImpl(
     private val reactContext: ReactApplicationContext

@@ -19,6 +19,32 @@ export const TosConsentAction = Object.freeze({
   WITHDRAW: 1,
 });
 
+export const StudioPlacement = Object.freeze({
+  Navbar: 'navbar',
+  Icon: 'icon',
+  EarnTab: 'earn_tab',
+  GameTab: 'game_tab',
+  HomePage: 'home_page',
+  NotificationInbox: 'notification_inbox',
+  Notification: 'notification',
+  MiniGame: 'mini_game',
+  OrderPage: 'order_page',
+  RedeemSection: 'redeem_section',
+  ScanReceipt: 'scan_receipt',
+  StepConverter: 'step_converter',
+});
+
+export const DisplayFormat = Object.freeze({
+  Icon: 'icon',
+  Notification: 'notification',
+  NotificationInbox: 'notification_inbox',
+  Carousel: 'carousel',
+  CustomCatalog: 'custom_catalog',
+  Banner: 'banner',
+  Popup: 'popup',
+  Interstitial: 'interstitial',
+});
+
 const PlaytimeStudio = {
   updateTosConsent: function(action) {
     return wrapPlaytimePromise(PlaytimeStudioSpec.updateTosConsent(action));

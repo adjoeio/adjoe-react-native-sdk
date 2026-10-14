@@ -1,4 +1,4 @@
-import { CampaignOptions, InstalledCampaignOptions } from "./Playtime";
+import { AppCategory, PlaytimeMetadata } from "./Playtime";
 
 /**
  * Rewarded action representation.
@@ -505,8 +505,181 @@ export enum PlaytimeCampaignStatus {
 }
 
 /**
- * The entry point of Adjoe Playtime SDK in Studio version. This namespace provides methods to fetch campaigns and installed apps to show them in your custom UI.
+ * Options for campaign distribution requests. Provides context (placement, category, display format, promotion tag, and per-request UA context) to the backend for campaign targeting.
  */
+export interface CampaignOptions {
+    /**
+     * The placement where the campaigns will be shown.
+     *
+     * @defaultValue null
+     */
+    placement?: StudioPlacement | null;
+
+    /**
+     * The app category filter. Defaults to GAMING.
+     *
+     * @defaultValue AppCategory.GAMING
+     */
+    category?: AppCategory | null;
+
+    /**
+     * The UI display format.
+     *
+     * @defaultValue null
+     */
+    displayFormat?: DisplayFormat | null;
+
+    /**
+     * An optional promotion tag to trigger user-level promotions.
+     *
+     * @defaultValue null
+     */
+    promotionTag?: string | null;
+
+    /**
+     * Metadata visible in S2S payouts.
+     *
+     * @defaultValue null
+     */
+    metadata?: PlaytimeMetadata | null;
+}
+
+/**
+ * Options for installed-campaign requests. Exposes only the app category filter for campaign targeting.
+ */
+export interface InstalledCampaignOptions {
+    /**
+     * The app category filter. Defaults to GAMING.
+     *
+     * @defaultValue AppCategory.GAMING
+     */
+    category?: AppCategory | null;
+}
+
+/**
+ * Represents the placement where Studio campaigns will be shown.
+ * Use one of the predefined placements or create a custom placement via the custom case.
+ */
+export type StudioPlacement = string;
+
+/**
+ * Represents the placement where Studio campaigns will be shown.
+ * Use one of the predefined placements or create a custom placement via the custom case.
+ */
+export const StudioPlacement: {
+    /**
+     * Campaigns placed in the navigation bar.
+     */
+    readonly Navbar: 'navbar';
+
+    /**
+     * Campaigns placed as an icon.
+     */
+    readonly Icon: 'icon';
+
+    /**
+     * Campaigns placed in the earn tab.
+     */
+    readonly EarnTab: 'earn_tab';
+
+    /**
+     * Campaigns placed in the game tab.
+     */
+    readonly GameTab: 'game_tab';
+
+    /**
+     * Campaigns placed on the home page.
+     */
+    readonly HomePage: 'home_page';
+
+    /**
+     * Campaigns placed in the notification inbox.
+     */
+    readonly NotificationInbox: 'notification_inbox';
+
+    /**
+     * Campaigns placed in a notification.
+     */
+    readonly Notification: 'notification';
+
+    /**
+     * Campaigns placed in a mini game.
+     */
+    readonly MiniGame: 'mini_game';
+
+    /**
+     * Campaigns placed on the order page.
+     */
+    readonly OrderPage: 'order_page';
+
+    /**
+     * Campaigns placed in the redeem section.
+     */
+    readonly RedeemSection: 'redeem_section';
+
+    /**
+     * Campaigns placed in the scan receipt flow.
+     */
+    readonly ScanReceipt: 'scan_receipt';
+
+    /**
+     * Campaigns placed in the step converter.
+     */
+    readonly StepConverter: 'step_converter';
+};
+
+/**
+ * Represents the display format for campaign rendering.
+ * Use one of the predefined formats or create a custom format via the custom case.
+ */
+export type DisplayFormat = string;
+
+/**
+ * Represents the display format for campaign rendering.
+ * Use one of the predefined formats or create a custom format via the custom case.
+ */
+export const DisplayFormat: {
+    /**
+     * Renders campaigns as icons.
+     */
+    readonly Icon: 'icon';
+
+    /**
+     * Renders campaigns as notifications.
+     */
+    readonly Notification: 'notification';
+
+    /**
+     * Renders campaigns in a notification inbox.
+     */
+    readonly NotificationInbox: 'notification_inbox';
+
+    /**
+     * Renders campaigns in a horizontally scrolling carousel.
+     */
+    readonly Carousel: 'carousel';
+
+    /**
+     * Renders campaigns in a custom catalog layout.
+     */
+    readonly CustomCatalog: 'custom_catalog';
+
+    /**
+     * Renders campaigns as a banner.
+     */
+    readonly Banner: 'banner';
+
+    /**
+     * Renders campaigns in a popup.
+     */
+    readonly Popup: 'popup';
+
+    /**
+     * Renders campaigns as an interstitial.
+     */
+    readonly Interstitial: 'interstitial';
+};
+
 declare namespace _default {
     /**
      * Update the user's consent to the Playtime terms of service, either accepting or withdrawing it.
@@ -557,7 +730,6 @@ declare namespace _default {
      * Use this method to open installed application.
      *
      * Supported on both Android and iOS.
-     * @param campaign The campaign you want to open
      */
     function openInstalledCampaign(campaign: PlaytimeCampaign): Promise<void>;
 
@@ -565,9 +737,8 @@ declare namespace _default {
      * Use this method to open chatbot.
      *
      * Supported on both Android and iOS.
-     * @param [campaign] The campaign you want to open
      */
-    function openChatbot(campaign?: PlaytimeCampaign): Promise<void>;
+    function openChatbot(campaign?: PlaytimeCampaign | null): Promise<void>;
 
     /**
      * Use this method to reset rewards connect

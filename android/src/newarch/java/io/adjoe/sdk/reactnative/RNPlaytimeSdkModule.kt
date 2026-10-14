@@ -30,6 +30,23 @@ class RNPlaytimeSdkModule(
         implementation.teardown(promise)
     }
 
+    override fun addEventListener(promise: Promise) {
+        implementation.addEventListener(promise)
+    }
+
+    override fun removeEventListener(promise: Promise) {
+        implementation.removeEventListener(promise)
+    }
+
+    override fun addListener(eventName: String) {
+        // Required by the generated spec so the NativeEventEmitter has a native counterpart.
+        // Event delivery is driven by the SDK listener, so no per-subscription work is needed.
+    }
+
+    override fun removeListeners(count: Double) {
+        // Required by the generated spec; see addListener.
+    }
+
     override fun executeImpressionEvent(catalogPlacement: ReadableMap?, promise: Promise) {
         implementation.executeImpressionEvent(catalogPlacement, promise)
     }

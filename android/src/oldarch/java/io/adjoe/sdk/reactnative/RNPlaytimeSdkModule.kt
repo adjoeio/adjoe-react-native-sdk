@@ -37,6 +37,27 @@ class RNPlaytimeSdkModule(
     }
 
     @ReactMethod
+    fun addEventListener(promise: Promise) {
+        implementation.addEventListener(promise)
+    }
+
+    @ReactMethod
+    fun removeEventListener(promise: Promise) {
+        implementation.removeEventListener(promise)
+    }
+
+    @ReactMethod
+    fun addListener(eventName: String) {
+        // Required so the JS NativeEventEmitter has a native counterpart on the old
+        // architecture. Event delivery is driven by the SDK listener.
+    }
+
+    @ReactMethod
+    fun removeListeners(count: Double) {
+        // Required by the NativeEventEmitter contract; see addListener.
+    }
+
+    @ReactMethod
     fun executeImpressionEvent(catalogPlacement: ReadableMap?, promise: Promise) {
         implementation.executeImpressionEvent(catalogPlacement, promise)
     }
