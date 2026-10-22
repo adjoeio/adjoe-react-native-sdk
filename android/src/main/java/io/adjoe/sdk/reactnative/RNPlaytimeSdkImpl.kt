@@ -14,6 +14,7 @@ import io.adjoe.sdk.PlaytimeException
 import io.adjoe.sdk.PlaytimeInitListener
 import io.adjoe.sdk.PlaytimeCatalogLaunchListener
 import io.adjoe.sdk.PlaytimeImpressionEventListener
+import io.adjoe.sdk.PlaytimeTeardownListener
 
 class RNPlaytimeSdkImpl(
     private val reactContext: ReactApplicationContext
@@ -75,8 +76,16 @@ class RNPlaytimeSdkImpl(
 
     fun teardown(promise: Promise) {
         try {
-            Playtime.teardown()
-            promise.resolve(null)
+            Playtime.teardown(object : PlaytimeTeardownListener {
+                override fun onSuccess() {
+                    eventListener = null
+                    promise.resolve(null)
+                }
+
+                override fun onError(error: PlaytimeException) {
+                    ErrorsUtil.reject(promise, ErrorsUtil.toPlaytimeException(error))
+                }
+            })
         } catch (e: Exception) {
             ErrorsUtil.reject(promise, e)
         }
