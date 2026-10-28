@@ -9,8 +9,15 @@
 #endif
 
 // Generated Swift umbrella header (module name derived from the pod name
-// "react-native-adjoe-sdk"). Only exists after a build.
+// "react-native-adjoe-sdk"). Only exists after a build. The angle-bracket form
+// resolves when the pod builds as a framework (use_frameworks! :linkage =>
+// :static, required by Firebase and common in Expo); the quoted form resolves
+// when it builds as a plain static library.
+#if __has_include(<react_native_adjoe_sdk/react_native_adjoe_sdk-Swift.h>)
+#import <react_native_adjoe_sdk/react_native_adjoe_sdk-Swift.h>
+#else
 #import "react_native_adjoe_sdk-Swift.h"
+#endif
 
 // The module always conforms to `RCTBridgeModule` so it registers on the legacy
 // Native Modules registry (Old Architecture). On the New Architecture it also

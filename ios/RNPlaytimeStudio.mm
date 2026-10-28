@@ -5,7 +5,11 @@
 #import "RNPlaytimeSdkSpec.h"
 #endif
 
+#if __has_include(<react_native_adjoe_sdk/react_native_adjoe_sdk-Swift.h>)
+#import <react_native_adjoe_sdk/react_native_adjoe_sdk-Swift.h>
+#else
 #import "react_native_adjoe_sdk-Swift.h"
+#endif
 
 @interface RNPlaytimeStudio : NSObject <RCTBridgeModule>
 @end
