@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,swift}"
   s.requires_arc = true
 
-  s.dependency 'PlaytimeSDK', '5.0.0'
+  s.dependency 'PlaytimeSDK', '5.1.0-beta.1'
 
   # Wires up the New Architecture (TurboModules) dependencies and the
   # RCT_NEW_ARCH_ENABLED / Codegen setup. Provided by the React Native pod
