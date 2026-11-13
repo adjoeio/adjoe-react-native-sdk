@@ -16,7 +16,6 @@ class RNPlaytimeSdkPackage : BaseReactPackage() {
         return when (name) {
             RNPlaytimeSdkModule.NAME -> RNPlaytimeSdkModule(reactContext)
             RNPlaytimeStudio.NAME -> RNPlaytimeStudio(reactContext)
-            RNPlaytimeProtection.NAME -> RNPlaytimeProtection(reactContext)
             else -> null
         }
     }
@@ -36,14 +35,6 @@ class RNPlaytimeSdkPackage : BaseReactPackage() {
                 RNPlaytimeStudio.NAME to ReactModuleInfo(
                     RNPlaytimeStudio.NAME,
                     RNPlaytimeStudio.NAME,
-                    false,
-                    false,
-                    false,
-                    isTurboModule
-                ),
-                RNPlaytimeProtection.NAME to ReactModuleInfo(
-                    RNPlaytimeProtection.NAME,
-                    RNPlaytimeProtection.NAME,
                     false,
                     false,
                     false,
